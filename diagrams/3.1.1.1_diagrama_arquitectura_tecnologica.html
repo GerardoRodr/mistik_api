@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mistik Tours & Travel · Arquitectura Tecnologica del Software (3.1.1.1)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f5f5f5;
+      --color-paper-2: #ececec;
+      --color-ink:     #2d3142;
+      --color-muted:   #4f5d75;
+      --color-soft:    #7a8399;
+      --color-accent:  #eb6c36;
+      --color-link:    #2e5aa8;
+      --color-rule:    rgba(45, 49, 66, 0.12);
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame {
+      max-width: 1240px;
+      width: 100%;
+    }
+
+    .header-area {
+      margin-bottom: 2rem;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 2.8vw + 0.8rem, 2.5rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--color-muted);
+      max-width: 880px;
+      line-height: 1.5;
+    }
+
+    .diagram-container {
+      background: #ffffff;
+      border: 1px solid var(--color-rule);
+      border-radius: 8px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      margin-bottom: 2.5rem;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 1120px;
+      height: auto;
+      display: block;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 0.95fr;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--color-rule);
+      border-radius: 6px;
+      padding: 1.25rem;
+    }
+
+    .card .eyebrow {
+      font-size: 0.65rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .card-dot.coral { background: var(--color-accent); }
+    .card-dot.link  { background: var(--color-link); }
+    .card-dot.ink   { background: var(--color-ink); }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-ink);
+    }
+
+    .card ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      line-height: 1.5;
+    }
+
+    .card ul li {
+      margin-bottom: 0.4rem;
+      padding-left: 0.85rem;
+      position: relative;
+    }
+
+    .card ul li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--color-soft);
+    }
+
+    footer {
+      border-top: 1px solid var(--color-rule);
+      padding-top: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-soft);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="header-area">
+      <p class="eyebrow">PAQUETE EDT 3.1.1.1 · DISENO ARQUITECTONICO (SEMANA 4)</p>
+      <h1>Diagrama de arquitectura tecnologica del software</h1>
+      <p class="subtitle">
+        Arquitectura limpia de 3 capas y topologia cloud para MISTIK TOURS & TRAVEL S.A.C.: SPA reactiva en Angular 22 (Vercel),
+        API REST modular en NestJS (Render) y capa de persistencia en PostgreSQL (Supabase) con integracion de Google Gemini 2.5 Flash y Google Drive.
+      </p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1160 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="arch-tech-title arch-tech-desc">
+        <title id="arch-tech-title">Mistik Tours · Arquitectura Tecnologica del Software</title>
+        <desc id="arch-tech-desc">Diagrama de arquitectura limpia de 3 capas mostrando la interaccion entre Angular 22 en Vercel, NestJS en Render, PostgreSQL en Supabase, IA Google Gemini y Google Drive.</desc>
+        <defs>
+          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.9" fill="rgba(45,49,66,0.10)"/>
+          </pattern>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+          </marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+          </marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+        <rect width="100%" height="100%" fill="url(#dots)" opacity="0.55"/>
+
+        <!-- ZONAS PERIMETRALES (Dibujadas antes de conectores y nodos) -->
+        <!-- Zona 1: Capa Cliente (Vercel) -->
+        <rect x="40" y="72" width="296" height="444" rx="8"
+              fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <rect x="112" y="76" width="152" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="188" y="85" fill="rgba(45,49,66,0.50)" font-size="7" font-family="'Geist Mono', monospace"
+              text-anchor="middle" letter-spacing="0.14em">CAPA CLIENTE · VERCEL</text>
+
+        <!-- Zona 2: Capa Servidor (Render) -->
+        <rect x="412" y="72" width="312" height="444" rx="8"
+              fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <rect x="492" y="76" width="152" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="568" y="85" fill="rgba(45,49,66,0.50)" font-size="7" font-family="'Geist Mono', monospace"
+              text-anchor="middle" letter-spacing="0.14em">CAPA SERVIDOR · RENDER</text>
+
+        <!-- Zona 3: Capa Datos & Servicios (Cloud) -->
+        <rect x="792" y="72" width="328" height="444" rx="8"
+              fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <rect x="856" y="76" width="200" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="956" y="85" fill="rgba(45,49,66,0.50)" font-size="7" font-family="'Geist Mono', monospace"
+              text-anchor="middle" letter-spacing="0.14em">DATOS &amp; SERVICIOS CLOUD</text>
+
+        <!-- CONECTORES ORTOGONALES (Dibujados antes de los componentes) -->
+        <!-- 1. Navegador a Angular 22 SPA (Vertical) -->
+        <line x1="188" y1="212" x2="188" y2="296" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- 2. Angular 22 SPA a NestJS REST API Core (HTTP REST - Azul link) -->
+        <path d="M 308,340 H 368 Q 376,340 376,332 V 198 Q 376,190 384,190 H 444"
+              fill="none" stroke="#2e5aa8" stroke-width="1.4" marker-end="url(#arrow-link)"/>
+
+        <!-- 3. NestJS REST API Core a Angular 22 SPA (WebSockets - Dashed reactivo) -->
+        <path d="M 444,240 H 360 Q 352,240 352,248 V 382 Q 352,390 344,390 H 308"
+              fill="none" stroke="#4f5d75" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+        <!-- 4. NestJS REST API Core a Prisma ORM (Vertical interno) -->
+        <line x1="568" y1="296" x2="568" y2="360" stroke="#eb6c36" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+
+        <!-- 5. Prisma ORM a PostgreSQL Database (TCP SQL) -->
+        <line x1="692" y1="404" x2="824" y2="404" stroke="#2d3142" stroke-width="1.3" marker-end="url(#arrow)"/>
+
+        <!-- 6. NestJS REST API Core a Google Gemini 2.5 Flash (Horizontal) -->
+        <line x1="692" y1="180" x2="824" y2="180" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- 7. NestJS REST API Core a Google Drive Storage (Ortogonal) -->
+        <path d="M 692,240 H 750 Q 758,240 758,248 V 280 Q 758,288 766,288 H 824"
+              fill="none" stroke="#7a8399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+        <!-- ETIQUETAS Y MASCARAS DE CONECTORES (Con margen minimo de 6px) -->
+        <!-- Etiqueta 1: Navegador -> Angular -->
+        <rect x="196" y="248" width="76" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="234" y="257" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DOM EVENTS</text>
+
+        <!-- Etiqueta 2: Angular -> NestJS (REST HTTPS) -->
+        <rect x="382" y="172" width="60" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="412" y="181" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HTTPS / REST</text>
+
+        <!-- Etiqueta 3: NestJS -> Angular (WebSockets) -->
+        <rect x="370" y="222" width="64" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="402" y="231" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WSS / KANBAN</text>
+
+        <!-- Etiqueta 4: NestJS -> Prisma (Internal) -->
+        <rect x="576" y="322" width="70" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="611" y="331" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">INTERNAL DTO</text>
+
+        <!-- Etiqueta 5: Prisma -> PostgreSQL -->
+        <rect x="724" y="386" width="68" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="758" y="395" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TCP 5432 / TLS</text>
+
+        <!-- Etiqueta 6: NestJS -> Gemini -->
+        <rect x="724" y="162" width="68" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="758" y="171" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">NLP / OCR SDK</text>
+
+        <!-- Etiqueta 7: NestJS -> Drive -->
+        <rect x="686" y="222" width="68" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="720" y="231" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">METADATA URL</text>
+
+        <!-- COMPONENTES DE SOFTWARE (Nodos con mascaras para cubrir trazos) -->
+
+        <!-- Nodo 1: Navegador / Usuario -->
+        <rect x="68" y="132" width="240" height="80" rx="6" fill="#f5f5f5"/>
+        <rect x="68" y="132" width="240" height="80" rx="6" fill="rgba(79,93,117,0.08)" stroke="#7a8399" stroke-width="1"/>
+        <rect x="76" y="140" width="36" height="12" rx="2" fill="transparent" stroke="rgba(122,131,153,0.50)" stroke-width="0.8"/>
+        <text x="94" y="149" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLIENT</text>
+        <text x="188" y="168" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Navegador / Usuario Web</text>
+        <text x="188" y="186" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Chrome / Edge · Interfaz SPA</text>
+        <text x="188" y="200" fill="#7a8399" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">Agentes y Supervisores de Mistik Tours</text>
+
+        <!-- Nodo 2: Angular 22 SPA -->
+        <rect x="68" y="296" width="240" height="120" rx="6" fill="#f5f5f5"/>
+        <rect x="68" y="296" width="240" height="120" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="76" y="304" width="28" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.35)" stroke-width="0.8"/>
+        <text x="90" y="313" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SPA</text>
+        <text x="188" y="332" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Angular 22 SPA</text>
+        <text x="188" y="350" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Vercel Edge Network · HTTPS</text>
+        <line x1="84" y1="362" x2="292" y2="362" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="188" y="378" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Signals &amp; Standalone Components</text>
+        <text x="188" y="394" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Drag &amp; Drop (@angular/cdk)</text>
+        <text x="188" y="408" fill="#4f5d75" font-size="8.5" font-family="'Geist Mono', monospace" text-anchor="middle">• Socket.io Client (Realtime)</text>
+
+        <!-- Nodo 3: NestJS REST API Core (FOCAL CORAL) -->
+        <rect x="444" y="132" width="248" height="164" rx="6" fill="#f5f5f5"/>
+        <rect x="444" y="132" width="248" height="164" rx="6" fill="rgba(235,108,54,0.06)" stroke="#eb6c36" stroke-width="1.3"/>
+        <rect x="452" y="140" width="32" height="12" rx="2" fill="transparent" stroke="rgba(235,108,54,0.60)" stroke-width="0.8"/>
+        <text x="468" y="149" fill="#eb6c36" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+        <text x="568" y="162" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">NestJS REST API Core</text>
+        <text x="568" y="178" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Node.js LTS · Render Cloud Platform</text>
+        <line x1="460" y1="190" x2="676" y2="190" stroke="rgba(235,108,54,0.30)" stroke-width="0.8"/>
+        <text x="568" y="206" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Modulos: Auth, PNR, Visas, Kanban, BI</text>
+        <text x="568" y="222" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Seguridad RBAC (Guards) &amp; DTOs con Validation</text>
+        <text x="568" y="238" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Gateway WebSockets (@nestjs/platform-socket.io)</text>
+        <text x="568" y="254" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">• Alertas Programadas (@nestjs/schedule Cron)</text>
+        <text x="568" y="270" fill="#eb6c36" font-size="8.5" font-family="'Geist Mono', monospace" text-anchor="middle">Arquitectura Limpia · Modular</text>
+
+        <!-- Nodo 4: Prisma ORM Engine -->
+        <rect x="444" y="360" width="248" height="88" rx="6" fill="#f5f5f5"/>
+        <rect x="444" y="360" width="248" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="452" y="368" width="28" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.35)" stroke-width="0.8"/>
+        <text x="466" y="377" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ORM</text>
+        <text x="568" y="392" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Prisma ORM Engine</text>
+        <text x="568" y="408" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Prisma Client v6.16 · Data Layer</text>
+        <line x1="460" y1="418" x2="676" y2="418" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="568" y="434" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">Tipado Fuerte · Migraciones 3FN · Connection Pool</text>
+
+        <!-- Nodo 5: PostgreSQL Database (Supabase) -->
+        <rect x="824" y="360" width="264" height="88" rx="6" fill="#f5f5f5"/>
+        <rect x="824" y="360" width="264" height="88" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="832" y="368" width="26" height="12" rx="2" fill="transparent" stroke="rgba(79,93,117,0.50)" stroke-width="0.8"/>
+        <text x="845" y="377" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DB</text>
+        <text x="956" y="392" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">PostgreSQL Database</text>
+        <text x="956" y="408" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Supabase Managed Cloud · v16.4</text>
+        <line x1="840" y1="418" x2="1072" y2="418" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="956" y="434" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">3FN Normalizado · Tablas Operativas &amp; AuditLog</text>
+
+        <!-- Nodo 6: Google Gemini 2.5 Flash -->
+        <rect x="824" y="132" width="264" height="80" rx="6" fill="#f5f5f5"/>
+        <rect x="824" y="132" width="264" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <rect x="832" y="140" width="26" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/>
+        <text x="845" y="149" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">AI</text>
+        <text x="956" y="162" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Google Gemini 2.5 Flash</text>
+        <text x="956" y="178" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">External AI Service · @google/genai</text>
+        <line x1="840" y1="188" x2="1072" y2="188" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="956" y="202" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">Parsing NLP Itinerarios PNR &amp; OCR Pasaportes</text>
+
+        <!-- Nodo 7: Google Drive Storage -->
+        <rect x="824" y="248" width="264" height="80" rx="6" fill="#f5f5f5"/>
+        <rect x="824" y="248" width="264" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <rect x="832" y="256" width="36" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/>
+        <text x="850" y="265" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DRIVE</text>
+        <text x="956" y="278" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Google Drive Storage</text>
+        <text x="956" y="294" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Google Workspace Cloud</text>
+        <line x1="840" y1="304" x2="1072" y2="304" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="956" y="318" fill="#2d3142" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">Vouchers y Comprobantes (Costo Cero S/ 0.00)</text>
+
+        <!-- BARRA INFERIOR DE LEYENDA -->
+        <line x1="40" y1="544" x2="1120" y2="544" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <text x="40" y="564" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+        <rect x="130" y="554" width="14" height="12" rx="2" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+        <text x="152" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">Backend Core (Focal)</text>
+
+        <rect x="300" y="554" width="14" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="322" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">Componente Interno / SPA</text>
+
+        <rect x="490" y="554" width="14" height="12" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <text x="512" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">Persistencia Relacional</text>
+
+        <rect x="670" y="554" width="14" height="12" rx="2" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <text x="692" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">Servicio Cloud Externo</text>
+
+        <line x1="840" y1="560" x2="868" y2="560" stroke="#2e5aa8" stroke-width="1.4" marker-end="url(#arrow-link)"/>
+        <text x="876" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">HTTP / REST</text>
+
+        <line x1="970" y1="560" x2="998" y2="560" stroke="#4f5d75" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <text x="1006" y="564" fill="#4f5d75" font-size="8.5" font-family="'Geist', sans-serif">WebSocket / Retorno</text>
+      </svg>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <p class="eyebrow">ARQUITECTURA DE SOFTWARE</p>
+        <div class="card-header">
+          <span class="card-dot coral"></span>
+          <h3>Arquitectura Limpia &amp; 3 Capas</h3>
+        </div>
+        <ul>
+          <li><strong>Desacoplamiento Estricto:</strong> La capa de presentacion (SPA Angular 22) se comunica con el servidor exclusivamente mediante contratos RESTful y eventos WebSockets.</li>
+          <li><strong>Gestion Reactiva con Signals:</strong> Estado de la SPA impulsado por Angular Signals para renderizado optimizado y tiempo de respuesta inferior a 5 segundos.</li>
+          <li><strong>Inyeccion de Dependencias:</strong> Backend NestJS estructurado en modulos transaccionales con DTOs validados via <em>ValidationPipe</em>.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">INFRAESTRUCTURA DE DESPLIEGUE</p>
+        <div class="card-header">
+          <span class="card-dot link"></span>
+          <h3>Topologia Cloud &amp; Costo Cero</h3>
+        </div>
+        <ul>
+          <li><strong>Despliegue Distribuido:</strong> Frontend alojado en red Edge de Vercel y Backend API ejecutado sobre contenedores en Render.</li>
+          <li><strong>Almacenamiento Costo Cero:</strong> No se incurre en gasto de almacenamiento binario cloud; los comprobantes y vouchers se vinculan directamente hacia Google Drive.</li>
+          <li><strong>Base de Datos Gestionada:</strong> PostgreSQL 16.4 en Supabase administrado mediante Prisma ORM con pooling de conexiones.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">SERVICIOS &amp; SEGURIDAD</p>
+        <div class="card-header">
+          <span class="card-dot ink"></span>
+          <h3>Inteligencia Artificial &amp; RBAC</h3>
+        </div>
+        <ul>
+          <li><strong>Google Gemini 2.5 Flash:</strong> Extraccion de itinerarios mediante procesamiento de lenguaje natural (NLP) y lectura OCR de documentos consulares.</li>
+          <li><strong>Seguridad RBAC:</strong> Control de accesos por perfiles (ADMIN, SUPERVISOR, AGENT) mediante tokens JWT y cifrado de contrasenas con Bcrypt.</li>
+          <li><strong>Auditoria Inmutable:</strong> Registro continuo de cambios de estado en <em>AuditLog</em> bajo la Ley N.° 29733 de Proteccion de Datos.</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer>
+      <span>MISTIK TOURS &amp; TRAVEL S.A.C. · RUC 20608945121</span>
+      <span>CAPSTONE PROJECT (INVE1535) · EDT 3.1.1.1 · UPN 2026-2</span>
+    </footer>
+  </div>
+</body>
+</html>
