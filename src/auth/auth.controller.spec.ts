@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Role } from '@prisma/client';
@@ -13,6 +14,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
+      imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
       controllers: [AuthController],
       providers: [
         {
@@ -51,6 +53,20 @@ describe('AuthController', () => {
       const result = await controller.login(loginDto);
       expect(result).toEqual(expectedResult);
       expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
+    });
+  });
+
+  describe('getProfile', () => {
+    it('debe retornar el usuario obtenido a traves del decorador CurrentUser', () => {
+      const mockUser = {
+        id: 'u-1',
+        email: 'admin@mistiktours.com',
+        name: 'Administrador Mistik',
+        role: Role.ADMIN,
+      };
+
+      const result = controller.getProfile(mockUser);
+      expect(result).toEqual(mockUser);
     });
   });
 });
