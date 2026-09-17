@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Roles de usuario en el sistema
+enum Role {
+  ADMIN
+  SUPERVISOR
+  AGENT
+}
+
+// Tipos de servicios ofrecidos
+enum ServiceType {
+  FLIGHT
+  VISA
+  PACKAGE
+  OTHER
+}
+
+// Estados del expediente de reserva
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROCESS
+  COMPLETED
+  CANCELLED
+}
+
+// Estados del flujo operativo Kanban
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  UNDER_REVIEW
+  DONE
+  CANCELLED
+}
+
+// Nivel de prioridad operativa
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Monedas transaccionales
+enum Currency {
+  PEN
+  USD
+}
+
+// Colaboradores y usuarios del sistema
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password      String
+  name          String
+  role          Role          @default(AGENT)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  assignedTasks ServiceTask[] @relation("AssignedTasks")
+  createdBookings Booking[]   @relation("CreatedBookings")
+  auditLogs     AuditLog[]    @relation("UserAuditLogs")
+
+  @@map("users")
+}
+
+// Clientes y titulares de expedientes
+model Customer {
+  id             String      @id @default(uuid())
+  documentType   String
+  documentNumber String      @unique
+  firstName      String
+  lastName       String
+  email          String?
+  phoneNumber    String?
+  address        String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  bookings       Booking[]
+  passengers     Passenger[]
+
+  @@map("customers")
+}
+
+// Expedientes y reservas de viaje
+model Booking {
+  id             String         @id @default(uuid())
+  bookingCode    String         @unique
+  customerId     String
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  serviceType    ServiceType
+  status         BookingStatus  @default(PENDING)
+  totalAmount    Decimal        @db.Decimal(10, 2)
+  currency       Currency       @default(USD)
+  notes          String?
+  createdById    String?
+  createdBy      User?          @relation("CreatedBookings", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  passengers     Passenger[]
+  tasks          ServiceTask[]
+  payments       PaymentRecord[]
+  visaProcesses  VisaProcess[]
+
+  @@map("bookings")
+}
+
+// Pasajeros individuales asociados al expediente
+model Passenger {
+  id             String        @id @default(uuid())
+  bookingId      String
+  booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId     String?
+  customer       Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  documentType   String
+  documentNumber String
+  firstName      String
+  lastName       String
+  birthDate      DateTime?
+  nationality    String?
+  pnr            String?
+  ticketNumber   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  visaProcesses  VisaProcess[]
+
+  @@map("passengers")
+}
+
+// Tareas operativas con responsable unico
+model ServiceTask {
+  id           String        @id @default(uuid())
+  title        String
+  description  String?
+  status       TaskStatus    @default(PENDING)
+  priority     Priority      @default(MEDIUM)
+  dueDate      DateTime?
+  bookingId    String?
+  booking      Booking?      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   User?         @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+  completedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  appointments Appointment[]
+
+  @@map("service_tasks")
+}
+
+// Citas consulares u operativas
+model Appointment {
+  id              String        @id @default(uuid())
+  title           String
+  appointmentDate DateTime
+  location        String
+  status          String        @default("SCHEDULED")
+  reminderSent    Boolean       @default(false)
+  taskId          String?
+  task            ServiceTask?  @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  visaProcessId   String?
+  visaProcess     VisaProcess?  @relation(fields: [visaProcessId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("appointments")
+}
+
+// Procesos de solicitud y tramites de visa
+model VisaProcess {
+  id                String        @id @default(uuid())
+  bookingId         String
+  booking           Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  passengerId       String?
+  passenger         Passenger?    @relation(fields: [passengerId], references: [id], onDelete: SetNull)
+  confirmationCode  String?
+  consularFeePaid   Boolean       @default(false)
+  consularFeeAmount Decimal?      @db.Decimal(10, 2) @default(185.00)
+  currency          Currency      @default(USD)
+  currentStep       String        @default("FORM_FILLING")
+  casDate           DateTime?
+  embassyDate       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  appointments      Appointment[]
+
+  @@map("visa_processes")
+}
+
+// Registro de pagos con enlace a comprobantes en Google Drive
+model PaymentRecord {
+  id              String        @id @default(uuid())
+  bookingId       String
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        Currency      @default(USD)
+  paymentMethod   String
+  operationNumber String?
+  bankName        String?
+  driveReceiptUrl String?
+  paymentDate     DateTime      @default(now())
+  isVerified      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payment_records")
+}
+
+// Registro inmutable de auditoria de acciones
+model AuditLog {
+  id         String    @id @default(uuid())
+  userId     String?
+  user       User?     @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityName String
+  entityId   String?
+  ipAddress  String?
+  userAgent  String?
+  oldValues  Json?
+  newValues  Json?
+  createdAt  DateTime  @default(now())
+
+  @@map("audit_logs")
+}
