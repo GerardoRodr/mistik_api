@@ -1,124 +1,227 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MISTIK TOURS - Backend API (CAPSTONE-TUR-2026)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST del Sistema Web SPA para la Gestion de Citas, Tareas Operativas y Expedientes Turisticos, desarrollado para la empresa MISTIK TOURS & TRAVEL S.A.C. en el marco del curso Capstone Project de la Universidad Privada del Norte (UPN).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Ficha Tecnica del Proyecto
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Codigo Identificador**: CAPSTONE-TUR-2026
+- **Empresa Cliente / Sponsor**: MISTIK TOURS & TRAVEL S.A.C. (RUC: 20608945121, Trujillo, La Libertad)
+- **Sponsor Ejecutivo**: Gerencia General / Propietario de Mistik Tours & Travel S.A.C.
+- **Sponsor Tecnologico**: Supervisor de Operaciones y Tramites Consulares
+- **Asesor Academico**: Docente del curso Capstone Project (INVE1535) - UPN
+- **Semestre Academico**: Ciclo 2026-2 (16 semanas)
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## Stack Tecnologico Backend
 
-## Compile and run the project
+- **Entorno de Ejecucion**: Node.js LTS (v24.x)
+- **Framework Backend**: NestJS (arquitectura modular en CommonJS)
+- **Capa de Persistencia**: Prisma ORM v6 sobre PostgreSQL (Supabase)
+- **Seguridad y Criptografia**: Passport JWT (`@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`) y Bcrypt
+- **Validacion de Entrada**: `class-validator` y `class-transformer` con `ValidationPipe` global
+- **Documentacion Interactiva**: Swagger / OpenAPI (`@nestjs/swagger`) en `/api/docs`
+- **Pruebas Automatizadas**: Jest (pruebas unitarias y funcionales)
+- **Linter y Calidad de Codigo**: Oxlint (analisis estatico de tipos y sintaxis)
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## Modelo de Datos Relacional en Tercera Forma Normal (3FN)
 
-# production mode
-$ npm run start:prod
-```
+El esquema de base de datos esta completamente tipado y normalizado en [prisma/schema.prisma](prisma/schema.prisma):
 
-## Run tests
+### Enums
+- **Role**: `ADMIN`, `SUPERVISOR`, `AGENT`
+- **ServiceType**: `FLIGHT`, `VISA`, `PACKAGE`, `OTHER`
+- **BookingStatus**: `PENDING`, `CONFIRMED`, `IN_PROCESS`, `COMPLETED`, `CANCELLED`
+- **TaskStatus**: `PENDING`, `IN_PROGRESS`, `UNDER_REVIEW`, `DONE`, `CANCELLED`
+- **Priority**: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+- **Currency**: `PEN`, `USD`
 
-```bash
-# unit tests
-$ npm run test
+### Entidades Normalizadas
+1. **User** (`users`): Colaboradores de la agencia con roles RBAC y claves hasheadas con Bcrypt.
+2. **Customer** (`customers`): Titulares y clientes registrados con documento de identidad unico.
+3. **Booking** (`bookings`): Expedientes y reservas de viaje vinculadas a clientes y usuarios creadores.
+4. **Passenger** (`passengers`): Pasajeros individuales desacoplados con localizador PNR y numero de boleto.
+5. **ServiceTask** (`service_tasks`): Tareas operativas del flujo Kanban con responsable unico obligatorio.
+6. **Appointment** (`appointments`): Citas consulares (CAS / Embajada) u operativas multianuales.
+7. **VisaProcess** (`visa_processes`): Control de solicitudes de visa DS-160 y registro de arancel consular.
+8. **PaymentRecord** (`payment_records`): Control de cobros y pagos con hipervinculos a Google Drive (costo cero).
+9. **AuditLog** (`audit_logs`): Registro inmutable de trazabilidad y auditoria de eventos en el sistema.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+## Requisitos Previos
 
-## Deployment
+- Node.js LTS (version 20.x o superior)
+- npm (version 10.x o superior)
+- Acceso a una instancia de PostgreSQL (local o proyecto en Supabase)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Instalacion y Configuracion
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project:
+### 1. Clonar el repositorio e instalar dependencias
 
 ```bash
-$ npm install @nestjs/observe
+git clone <URL_DEL_REPOSITORIO>
+cd mistik_api
+npm install
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+### 2. Configurar variables de entorno
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+Crear un archivo `.env` en la raiz del proyecto a partir del archivo de ejemplo `.env.example`:
 
-## Resources
+```bash
+cp .env.example .env
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Configurar los parametros en `.env`:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```env
+PORT=3000
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?sslmode=require"
+DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?sslmode=require"
+JWT_SECRET="mistik_jwt_secret_key_2026_capstone_secure"
+JWT_EXPIRATION="1h"
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Comandos Operativos de Prisma ORM
 
-## Stay in touch
+- **Validar sintaxis del esquema relacional**:
+  ```bash
+  npx prisma validate
+  ```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **Generar cliente fuertemente tipado (`@prisma/client`)**:
+  ```bash
+  npx prisma generate
+  ```
 
-## License
+- **Ejecutar migraciones en la base de datos**:
+  ```bash
+  npx prisma migrate dev --name init_db_schema
+  ```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Aplicar migraciones en produccion**:
+  ```bash
+  npx prisma migrate deploy
+  ```
+
+- **Sembrar datos iniciales (usuario administrador)**:
+  ```bash
+  npx prisma db seed
+  ```
+  Crea el usuario `admin@mistiktours.com` con clave hasheada `Admin2026!`.
+
+---
+
+## Comandos de Compilacion, Ejecucion y Pruebas
+
+- **Compilar el proyecto**:
+  ```bash
+  npm run build
+  ```
+
+- **Iniciar en modo desarrollo (hot-reload)**:
+  ```bash
+  npm run start:dev
+  ```
+
+- **Iniciar en modo produccion**:
+  ```bash
+  npm run start:prod
+  ```
+
+- **Ejecutar suite de pruebas con Jest**:
+  ```bash
+  npm test
+  ```
+
+- **Ejecutar analisis estatico y linter (Oxlint)**:
+  ```bash
+  npm run lint
+  ```
+
+---
+
+## Documentacion Interactiva de la API (Swagger)
+
+Una vez iniciado el servidor, la documentacion OpenAPI interactiva se encuentra disponible en:
+
+```text
+http://localhost:3000/api/docs
+```
+
+Para probar endpoints protegidos desde la interfaz de Swagger:
+1. Realizar una peticion a `POST /auth/login` con las credenciales corporativas.
+2. Copiar el valor de `accessToken` retornado.
+3. Presionar el boton **Authorize** en la esquina superior de Swagger UI.
+4. Pegar el token en el campo `JWT-auth` y confirmar.
+
+### Catalogo de Endpoints Disponibles
+
+| Metodo | Ruta | Descripcion | Autenticacion |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/auth/login` | Iniciar sesion con correo y clave, emite token JWT | Publico |
+| `GET` | `/auth/profile` | Consultar perfil del usuario autenticado en sesion | Bearer JWT |
+
+---
+
+## Estructura del Codigo Fuente (`src/`)
+
+```text
+src/
+├── app.controller.spec.ts   # Pruebas unitarias del controlador base
+├── app.controller.ts        # Controlador base de comprobacion de salud
+├── app.module.ts            # Modulo principal del backend
+├── app.service.ts           # Servicio base de la aplicacion
+├── main.ts                  # Punto de entrada, ValidationPipe y Swagger
+├── auth/                    # Modulo de seguridad y autenticacion
+│   ├── auth.controller.spec.ts
+│   ├── auth.controller.ts   # Endpoints /auth/login y /auth/profile
+│   ├── auth.module.ts       # Registro de JwtModule y PassportModule
+│   ├── auth.service.spec.ts
+│   ├── auth.service.ts      # Validacion bcrypt y emision de tokens
+│   ├── auth-verification.spec.ts # Pruebas funcionales de seguridad
+│   ├── decorators/
+│   │   └── current-user.decorator.ts # Inyeccion de req.user
+│   ├── dto/
+│   │   └── login.dto.ts     # DTO validado con class-validator
+│   ├── guards/
+│   │   ├── jwt-auth.guard.spec.ts
+│   │   └── jwt-auth.guard.ts # Guard protector basado en JWT
+│   └── strategies/
+│       ├── jwt.strategy.spec.ts
+│       └── jwt.strategy.ts  # Estrategia de extraccion Bearer de Passport
+├── prisma/                  # Capa de persistencia global
+│   ├── prisma.module.ts     # Modulo global exportador de PrismaService
+│   └── prisma.service.ts    # Cliente Prisma con hooks de conexion
+└── users/                   # Modulo de gestion de colaboradores
+    ├── users.module.ts      # Modulo de usuarios
+    ├── users.service.spec.ts
+    └── users.service.ts     # Metodos findByEmail, findById y create
+```
+
+---
+
+## Equipo del Proyecto y Matriz de Roles (UPN)
+
+| Integrante | Codigo UPN | Rol en el Proyecto | Responsabilidades Principales |
+| :--- | :---: | :--- | :--- |
+| **Rodriguez Monzon, Gerardo Manuel** | `N00451719` | Lider de Proyecto / Product Owner & Gestor de Flujo | Alcance tecnico, gestion de politicas Kanban y comunicacion con Sponsor y UPN. |
+| **Garcia Lujan, Laura Thalia** | `N00269668` | Analista de Requerimientos & Disenadora UI/UX | Especificacion SRS, prototipado interactivo en Figma y Design System. |
+| **Llaccolla Gamboa, Katherine Lisbeth** | `N00287214` | Desarrolladora Frontend SPA (Angular 22) | Arquitectura SPA con Standalone Components, Signals y tablero Drag & Drop. |
+| **Portales Villa, Abrhyl Kimberly** | `N00316147` | Desarrolladora Backend & Arquitectura de BD | Normalizacion relacional 3FN, esquema Prisma ORM, APIs RESTful y seguridad JWT. |
+| **Oliva Ulloa, Ana Cecilia** | `N00293453` | Analista de Calidad de Software (QA / SQA) & Seguridad | Pruebas unitarias/integracion con Jest, auditoria de seguridad (Ley 29733) y UAT. |
+
+---
+
+## Licencia
+
+Este proyecto esta bajo licencia privada institucional para MISTIK TOURS & TRAVEL S.A.C. y la Universidad Privada del Norte.
