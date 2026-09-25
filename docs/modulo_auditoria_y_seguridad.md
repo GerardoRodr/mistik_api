@@ -121,3 +121,20 @@ Ubicado en `src/common/filters/http-exception.filter.ts`, este filtro global int
 | `404` | Not Found | El recurso consultado (ej. cliente por UUID) no existe en la base de datos |
 | `409` | Conflict | Registro duplicado (ej. numero de documento o email ya registrado) |
 | `500` | Internal Server Error | Falla no controlada del servidor o desconexion de base de datos |
+
+---
+
+## 4. Politica de Intercambio de Recursos de Origen Cruzado (CORS)
+
+Para permitir el acceso seguro desde la aplicacion web frontend (SPA en Angular corriendo en `http://localhost:4200`), el backend expone politicas CORS configuradas en `src/main.ts`:
+
+### 4.1. Parametrizacion por Variables de Entorno
+- La variable `CORS_ORIGIN` en el archivo `.env` permite definir origenes admitidos separados por comas.
+- Valor por defecto para desarrollo local: `http://localhost:4200,http://127.0.0.1:4200`.
+
+### 4.2. Caracteristicas de Seguridad CORS Habilitadas
+- **Credenciales (`credentials: true`):** Permite el envio e intercambio de cabeceras seguras de autorizacion y cookies entre el frontend y el backend.
+- **Metodos autorizados:** `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, `HEAD`.
+- **Cabeceras permitidas:** `Content-Type`, `Authorization`, `Accept`, `Origin`, `X-Requested-With`.
+- **Manejo de Preflight:** Las peticiones preliminares `OPTIONS` emitidas por navegadores modernos son respondidas de forma automatica con cabeceras CORS validas sin requerir autenticacion adicional.
+
