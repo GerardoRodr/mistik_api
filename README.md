@@ -170,6 +170,10 @@ Para probar endpoints protegidos desde la interfaz de Swagger:
 | :--- | :--- | :--- | :---: |
 | `POST` | `/auth/login` | Iniciar sesion con correo y clave, emite token JWT | Publico |
 | `GET` | `/auth/profile` | Consultar perfil del usuario autenticado en sesion | Bearer JWT |
+| `GET` | `/api/v1/customers` | Busqueda paginada y filtrado de expedientes (< 5s) | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
+| `GET` | `/api/v1/customers/:id` | Detalle del expediente 360 del cliente y su historial | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
+| `POST` | `/api/v1/customers` | Registro de cliente con validacion DTO estricta | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
+| `PATCH` | `/api/v1/customers/:id` | Actualizacion parcial de datos del expediente | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
 
 ---
 
@@ -190,15 +194,36 @@ src/
 │   ├── auth.service.ts      # Validacion bcrypt y emision de tokens
 │   ├── auth-verification.spec.ts # Pruebas funcionales de seguridad
 │   ├── decorators/
-│   │   └── current-user.decorator.ts # Inyeccion de req.user
+│   │   ├── current-user.decorator.ts # Inyeccion de req.user
+│   │   └── roles.decorator.ts        # Decorador @Roles para RBAC
 │   ├── dto/
 │   │   └── login.dto.ts     # DTO validado con class-validator
 │   ├── guards/
 │   │   ├── jwt-auth.guard.spec.ts
-│   │   └── jwt-auth.guard.ts # Guard protector basado en JWT
+│   │   ├── jwt-auth.guard.ts # Guard protector basado en JWT
+│   │   ├── roles.guard.spec.ts
+│   │   └── roles.guard.ts    # Guard RBAC para control por roles
 │   └── strategies/
 │       ├── jwt.strategy.spec.ts
 │       └── jwt.strategy.ts  # Estrategia de extraccion Bearer de Passport
+├── common/                  # Componentes transversales
+│   ├── filters/
+│   │   ├── http-exception.filter.spec.ts
+│   │   └── http-exception.filter.ts # Filtro global de respuestas de error
+│   └── interceptors/
+│       ├── audit-log.interceptor.spec.ts
+│       └── audit-log.interceptor.ts # Interceptor inmutable (Ley 29733)
+├── customers/               # Modulo CRM de expedientes de clientes
+│   ├── customers.controller.spec.ts
+│   ├── customers.controller.ts   # Endpoints CRUD /api/v1/customers
+│   ├── customers.integration.spec.ts # Pruebas integrales con Supertest
+│   ├── customers.module.ts
+│   ├── customers.service.spec.ts
+│   ├── customers.service.ts      # Logica transaccional y busqueda < 5s
+│   └── dto/
+│       ├── create-customer.dto.ts
+│       ├── query-customer.dto.ts
+│       └── update-customer.dto.ts
 ├── prisma/                  # Capa de persistencia global
 │   ├── prisma.module.ts     # Modulo global exportador de PrismaService
 │   └── prisma.service.ts    # Cliente Prisma con hooks de conexion
