@@ -150,7 +150,17 @@ JWT_EXPIRATION="1h"
 
 ---
 
-## Documentacion Interactiva de la API (Swagger)
+## Documentacion de la API y Guias de Modulos
+
+Ademas de Swagger, el proyecto cuenta con **documentacion tecnica modular para desarrolladores** en la carpeta `docs/`, donde cada modulo cuenta con su propia guia detallada con ejemplos de payloads JSON, respuestas y comandos `curl`:
+
+- **Indice General y Onboarding**: [docs/indice_documentacion.md](docs/indice_documentacion.md)
+- **Modulo de Autenticacion**: [docs/modulo_autenticacion.md](docs/modulo_autenticacion.md)
+- **Modulo CRM de Clientes**: [docs/modulo_crm_clientes.md](docs/modulo_crm_clientes.md)
+- **Modulo de Auditoria y Seguridad**: [docs/modulo_auditoria_y_seguridad.md](docs/modulo_auditoria_y_seguridad.md)
+- **Modulo de Persistencia (Prisma)**: [docs/modulo_persistencia_prisma.md](docs/modulo_persistencia_prisma.md)
+
+### Documentacion Interactiva OpenAPI (Swagger)
 
 Una vez iniciado el servidor, la documentacion OpenAPI interactiva se encuentra disponible en:
 
@@ -166,14 +176,14 @@ Para probar endpoints protegidos desde la interfaz de Swagger:
 
 ### Catalogo de Endpoints Disponibles
 
-| Metodo | Ruta | Descripcion | Autenticacion |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/auth/login` | Iniciar sesion con correo y clave, emite token JWT | Publico |
-| `GET` | `/auth/profile` | Consultar perfil del usuario autenticado en sesion | Bearer JWT |
-| `GET` | `/api/v1/customers` | Busqueda paginada y filtrado de expedientes (< 5s) | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
-| `GET` | `/api/v1/customers/:id` | Detalle del expediente 360 del cliente y su historial | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
-| `POST` | `/api/v1/customers` | Registro de cliente con validacion DTO estricta | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
-| `PATCH` | `/api/v1/customers/:id` | Actualizacion parcial de datos del expediente | Bearer JWT (Roles: ADMIN, SUPERVISOR, AGENT/ASESOR) |
+| Metodo | Ruta | Descripcion | Autenticacion | Modulo |
+| :--- | :--- | :--- | :---: | :--- |
+| `POST` | `/auth/login` | Iniciar sesion con correo y clave, emite token JWT | Publico | AuthModule |
+| `GET` | `/auth/profile` | Consultar perfil del usuario autenticado en sesion | Bearer JWT | AuthModule |
+| `GET` | `/api/v1/customers` | Busqueda paginada y filtrado de expedientes (< 5s) | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
+| `GET` | `/api/v1/customers/:id` | Detalle del expediente 360 del cliente y su historial | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
+| `POST` | `/api/v1/customers` | Registro de cliente con validacion DTO estricta | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
+| `PATCH` | `/api/v1/customers/:id` | Actualizacion parcial de datos del expediente | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
 
 ---
 
