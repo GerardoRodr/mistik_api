@@ -15,6 +15,35 @@ async function bootstrap() {
     }),
   );
 
+  // Configuracion de CORS para comunicacion con frontend
+  const corsOriginEnv = process.env.CORS_ORIGIN;
+  const allowedOrigins: string[] = corsOriginEnv
+    ? corsOriginEnv.split(',').map((origin) => origin.trim())
+    : ['http://localhost:4200', 'http://127.0.0.1:4200'];
+
+  app.enableCors({
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // Permitir peticiones sin cabecera origin o que coincidan con la lista
+      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+    ],
+    credentials: true,
+  });
+
   // Configuracion de documentacion Swagger OpenAPI
   const swaggerConfig = new DocumentBuilder()
     .setTitle('MISTIK TOURS API')
