@@ -61,6 +61,11 @@ La siguiente tabla resume todos los endpoints disponibles en el backend, indican
 | `GET` | `/api/v1/customers/:id` | `CustomersModule` | Obtiene el expediente 360 grados de un cliente y su historial | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_crm_clientes.md](modulo_crm_clientes.md) |
 | `POST` | `/api/v1/customers` | `CustomersModule` | Registra un nuevo cliente validando documento unico | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_crm_clientes.md](modulo_crm_clientes.md) |
 | `PATCH` | `/api/v1/customers/:id` | `CustomersModule` | Actualiza de forma parcial los datos de un cliente | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_crm_clientes.md](modulo_crm_clientes.md) |
+| `GET` | `/api/v1/bookings` | `BookingsModule` | Consulta y filtro de reservas y vuelos con indices | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_reservas_aereas.md](modulo_reservas_aereas.md) |
+| `GET` | `/api/v1/bookings/:id` | `BookingsModule` | Detalle consolidado de expediente de reserva | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_reservas_aereas.md](modulo_reservas_aereas.md) |
+| `POST` | `/api/v1/bookings` | `BookingsModule` | Registra nueva reserva con pasajeros asociados | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_reservas_aereas.md](modulo_reservas_aereas.md) |
+| `GET` | `/api/v1/bookings/:id/transitions` | `BookingsModule` | Consulta transiciones validas en maquina de estados | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_reservas_aereas.md](modulo_reservas_aereas.md) |
+| `POST` | `/api/v1/bookings/:id/transition` | `BookingsModule` | Ejecuta cambio de estado validado en maquina de estados | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_reservas_aereas.md](modulo_reservas_aereas.md) |
 
 ---
 
@@ -70,5 +75,6 @@ Para consultar la especificacion completa de cada componente del backend, accede
 
 1. [Modulo de Autenticacion y Usuarios](modulo_autenticacion.md): Gestion de credenciales, login, perfil, DTOs y tokens JWT.
 2. [Modulo CRM de Clientes](modulo_crm_clientes.md): Gestion de expedientes 360, busqueda rapida, DTOs de creacion y actualizacion.
-3. [Modulo de Auditoria y Seguridad](modulo_auditoria_y_seguridad.md): Interceptor inmutable (Ley 29733), guardias RBAC y filtro de errores.
-4. [Modulo de Persistencia y Prisma](modulo_persistencia_prisma.md): Modelo de datos relacional 3FN, enums, migraciones y seed.
+3. [Modulo de Reservas Aereas y Maquina de Estados](modulo_reservas_aereas.md): Flujo transaccional de vuelos, PNR, invariantes y transiciones.
+4. [Modulo de Auditoria y Seguridad](modulo_auditoria_y_seguridad.md): Interceptor inmutable (Ley 29733), guardias RBAC y filtro de errores.
+5. [Modulo de Persistencia y Prisma](modulo_persistencia_prisma.md): Modelo de datos relacional 3FN, enums, migraciones y seed.

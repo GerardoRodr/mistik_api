@@ -89,6 +89,9 @@ model Customer {
   bookings       Booking[]
   passengers     Passenger[]
 
+  @@index([lastName, firstName])
+  @@index([documentType, documentNumber])
+  @@index([email])
   @@map("customers")
 }
 
@@ -113,6 +116,8 @@ model Booking {
   payments       PaymentRecord[]
   visaProcesses  VisaProcess[]
 
+  @@index([status, serviceType])
+  @@index([customerId])
   @@map("bookings")
 }
 
