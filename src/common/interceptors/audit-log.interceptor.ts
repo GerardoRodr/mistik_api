@@ -99,6 +99,8 @@ export class AuditLogInterceptor implements NestInterceptor {
     if (url.includes('customers')) return 'Customer';
     if (url.includes('auth')) return 'Auth';
     if (url.includes('bookings')) return 'Booking';
+    if (url.includes('visa-processes') || url.includes('visa'))
+      return 'VisaProcess';
     if (url.includes('tasks')) return 'ServiceTask';
     return 'General';
   }

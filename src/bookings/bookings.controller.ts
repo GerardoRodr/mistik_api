@@ -148,4 +148,29 @@ export class BookingsController {
   ) {
     return this.bookingsService.transition(id, dto, user);
   }
+
+  // Consultar pasajeros de una reserva por ID o codigo PNR (WBS 6.1.2.2)
+  @Get(':idOrPnr/passengers')
+  @Roles(Role.ADMIN, Role.SUPERVISOR, Role.AGENT, 'ASESOR')
+  @ApiOperation({
+    summary: 'Consultar pasajeros vinculados a una reserva por ID o codigo PNR',
+    description:
+      'Retorna el listado de pasajeros asociados a un expediente, verificando datos de identidad y calculando el estado de emision del boleto',
+  })
+  @ApiParam({
+    name: 'idOrPnr',
+    description: 'UUID de la reserva o codigo localizador PNR de 6 caracteres',
+    example: 'LIM456',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de pasajeros y estado de emision obtenida exitosamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Reserva o codigo PNR no encontrado',
+  })
+  async findPassengers(@Param('idOrPnr') idOrPnr: string) {
+    return this.bookingsService.findPassengersByBooking(idOrPnr);
+  }
 }

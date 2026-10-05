@@ -267,4 +267,73 @@ export class BookingsService {
       booking: updatedBooking,
     };
   }
+
+  // Consultar pasajeros de una reserva por ID UUID o codigo PNR (WBS 6.1.2.2)
+  async findPassengersByBooking(idOrPnr: string) {
+    const term = idOrPnr?.trim();
+    if (!term) {
+      throw new NotFoundException('Identificador o codigo PNR no proporcionado');
+    }
+
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(term);
+
+    const booking = await this.prisma.booking.findFirst({
+      where: isUuid
+        ? { id: term }
+        : {
+            OR: [
+              { bookingCode: { equals: term, mode: 'insensitive' } },
+              {
+                passengers: {
+                  some: { pnr: { equals: term, mode: 'insensitive' } },
+                },
+              },
+            ],
+          },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            documentType: true,
+            documentNumber: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        passengers: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException(
+        `Reserva con identificador o PNR '${term}' no encontrada`,
+      );
+    }
+
+    const enrichedPassengers = booking.passengers.map((p) => ({
+      ...p,
+      issueStatus: p.ticketNumber ? 'EMITIDO' : 'PENDIENTE_EMISION',
+    }));
+
+    return {
+      booking: {
+        id: booking.id,
+        bookingCode: booking.bookingCode,
+        serviceType: booking.serviceType,
+        status: booking.status,
+        totalAmount: booking.totalAmount,
+        currency: booking.currency,
+        createdAt: booking.createdAt,
+        customer: booking.customer,
+      },
+      passengers: enrichedPassengers,
+      totalPassengers: enrichedPassengers.length,
+    };
+  }
 }
