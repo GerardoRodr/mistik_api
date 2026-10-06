@@ -34,6 +34,15 @@ export class BookingsService {
       throw new NotFoundException('Cliente titular no encontrado');
     }
 
+    if (dto.wholesalerId) {
+      const wholesaler = await this.prisma.wholesaler.findUnique({
+        where: { id: dto.wholesalerId },
+      });
+      if (!wholesaler) {
+        throw new NotFoundException('Consolidadora no encontrada');
+      }
+    }
+
     const bookingCode = this.generateBookingCode();
 
     const createdBooking = await this.prisma.$transaction(async (tx) => {
@@ -41,6 +50,7 @@ export class BookingsService {
         data: {
           bookingCode,
           customerId: dto.customerId,
+          wholesalerId: dto.wholesalerId || null,
           serviceType: dto.serviceType,
           totalAmount: dto.totalAmount,
           currency: dto.currency || 'USD',
@@ -63,6 +73,9 @@ export class BookingsService {
         include: {
           customer: true,
           passengers: true,
+          wholesaler: {
+            select: { id: true, code: true, name: true, type: true },
+          },
         },
       });
     });
@@ -122,6 +135,9 @@ export class BookingsService {
             },
           },
           passengers: true,
+          wholesaler: {
+            select: { id: true, code: true, name: true, type: true },
+          },
         },
       }),
     ]);
@@ -154,6 +170,9 @@ export class BookingsService {
             name: true,
             role: true,
           },
+        },
+        wholesaler: {
+          select: { id: true, code: true, name: true, type: true },
         },
       },
     });
