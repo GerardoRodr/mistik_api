@@ -50,6 +50,7 @@ describe('BookingsService (Paquete 6.1.2.1)', () => {
     booking: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
       update: jest.fn(),
@@ -200,6 +201,49 @@ describe('BookingsService (Paquete 6.1.2.1)', () => {
       expect(result.transition.success).toBe(true);
       expect(result.transition.newStatus).toBe(BookingStatus.CONFIRMED);
       expect(result.booking.status).toBe(BookingStatus.CONFIRMED);
+    });
+  });
+
+  describe('findPassengersByBooking (WBS 6.1.2.2)', () => {
+    it('debe lanzar NotFoundException si no se encuentra la reserva o PNR', async () => {
+      mockPrismaService.booking.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.findPassengersByBooking('PNR404'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('debe retornar pasajeros enriquecidos con issueStatus PENDIENTE_EMISION y EMITIDO', async () => {
+      const bookingWithTickets = {
+        ...mockBooking,
+        passengers: [
+          {
+            id: 'p-1',
+            documentNumber: '74859612',
+            firstName: 'Lucia',
+            lastName: 'Mendez',
+            pnr: 'LIM456',
+            ticketNumber: null,
+          },
+          {
+            id: 'p-2',
+            documentNumber: '70112233',
+            firstName: 'Carlos',
+            lastName: 'Mendoza',
+            pnr: 'LIM456',
+            ticketNumber: '045-1234567890',
+          },
+        ],
+      };
+
+      mockPrismaService.booking.findFirst.mockResolvedValue(bookingWithTickets);
+
+      const result = await service.findPassengersByBooking('LIM456');
+
+      expect(result.booking.bookingCode).toBe('RES-001');
+      expect(result.totalPassengers).toBe(2);
+      expect(result.passengers[0].issueStatus).toBe('PENDIENTE_EMISION');
+      expect(result.passengers[1].issueStatus).toBe('EMITIDO');
     });
   });
 });
