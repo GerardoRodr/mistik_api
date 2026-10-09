@@ -74,6 +74,11 @@ Registro transaccional de pagos efectuados por clientes hacia sus reservas.
 Pistas de auditoria inmutables generadas por `AuditLogInterceptor`.
 - Campos clave: `id` (UUID), `userId` (FK opcional), `action`, `entityName`, `entityId`, `oldValues` (JSON), `newValues` (JSON), `ipAddress`, `userAgent`, `createdAt`.
 
+### 3.10. `Wholesaler` (Tabla: `wholesalers`)
+Catalogo normalizado de consolidadoras mayoristas de turismo y aerolineas emisoras.
+- Campos clave: `id` (UUID), `code` (unico, VARCHAR 20), `name` (VARCHAR 100), `type` (VARCHAR 30: WHOLESALER o AIRLINE), `ruc` (VARCHAR 11 opcional), `contactEmail` (VARCHAR 100 opcional), `contactPhone` (VARCHAR 20 opcional), `isActive` (boolean), `createdAt`, `updatedAt`.
+- Relaciones: Vinculada a `Booking` como clave foranea opcional retrocompatible (`wholesalerId`).
+
 ---
 
 ## 4. Guia de Comandos Operativos
@@ -93,9 +98,12 @@ npx prisma generate
 # 4. Crear y aplicar una nueva migracion SQL en desarrollo
 npx prisma migrate dev --name <nombre_descriptivo_de_migracion>
 
-# 5. Ejecutar el sembrado de datos iniciales (Seed con usuarios de prueba)
-npm run prisma:seed
+# 5. Ejecutar el sembrado de datos iniciales en todas las tablas
+npm run db:seed
 
-# 6. Abrir la interfaz grafica interactiva de navegacion (Prisma Studio)
+# 6. Reiniciar totalmente la base de datos (TRUNCATE CASCADE y re-sembrado integral)
+npm run db:reset
+
+# 7. Abrir la interfaz grafica interactiva de navegacion (Prisma Studio)
 npx prisma studio
 ```
