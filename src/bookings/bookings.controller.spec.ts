@@ -43,6 +43,11 @@ describe('BookingsController (Paquete 6.1.2.1)', () => {
         status: BookingStatus.CONFIRMED,
       },
     }),
+    findPassengersByBooking: jest.fn().mockResolvedValue({
+      booking: mockBooking,
+      passengers: [],
+      totalPassengers: 0,
+    }),
   };
 
   beforeEach(async () => {
@@ -119,6 +124,16 @@ describe('BookingsController (Paquete 6.1.2.1)', () => {
       expect(service.transition).toHaveBeenCalledWith(mockBooking.id, dto, user);
       expect(result.transition.success).toBe(true);
       expect(result.booking.status).toBe(BookingStatus.CONFIRMED);
+    });
+  });
+
+  describe('findPassengers', () => {
+    it('debe invocar service.findPassengersByBooking con id o PNR', async () => {
+      const result = await controller.findPassengers('LIM456');
+
+      expect(service.findPassengersByBooking).toHaveBeenCalledWith('LIM456');
+      expect(result).toHaveProperty('booking');
+      expect(result).toHaveProperty('passengers');
     });
   });
 });
