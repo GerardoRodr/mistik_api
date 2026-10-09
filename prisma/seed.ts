@@ -20,6 +20,36 @@ async function main() {
   });
 
   console.log(`Usuario administrador inicial configurado: ${admin.email}`);
+
+  // Catalogo inicial de consolidadoras mayoristas y aerolineas emisoras
+  const initialWholesalers = [
+    { code: 'COSTAMAR', name: 'Costamar Travel', type: 'WHOLESALER' },
+    { code: 'AGIL', name: 'Agil Viajes', type: 'WHOLESALER' },
+    { code: 'EUROAMERICAN', name: 'Euroamerican Travel', type: 'WHOLESALER' },
+    { code: 'CTM', name: 'CTM Tours', type: 'WHOLESALER' },
+    { code: 'LATAM', name: 'LATAM Airlines', type: 'AIRLINE' },
+    { code: 'COPA', name: 'Copa Airlines', type: 'AIRLINE' },
+    { code: 'AVIANCA', name: 'Avianca', type: 'AIRLINE' },
+  ];
+
+  for (const wholesaler of initialWholesalers) {
+    await prisma.wholesaler.upsert({
+      where: { code: wholesaler.code },
+      update: {
+        name: wholesaler.name,
+        type: wholesaler.type,
+        isActive: true,
+      },
+      create: {
+        code: wholesaler.code,
+        name: wholesaler.name,
+        type: wholesaler.type,
+        isActive: true,
+      },
+    });
+  }
+
+  console.log(`Catalogo inicial de consolidadoras registrado exitosamente (${initialWholesalers.length} registros)`);
 }
 
 main()

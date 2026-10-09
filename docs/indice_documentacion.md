@@ -71,6 +71,8 @@ La siguiente tabla resume todos los endpoints disponibles en el backend, indican
 | `GET` | `/api/v1/visa-processes` | `VisaProcessesModule` | Listado paginado de tramites consulares con filtros | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
 | `GET` | `/api/v1/visa-processes/:id` | `VisaProcessesModule` | Consulta expediente consular con citas y linea de tiempo | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
 | `PATCH` | `/api/v1/visa-processes/:id/status` | `VisaProcessesModule` | Avanza fase consular en la maquina de estados | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
+| `GET` | `/api/v1/wholesalers` | `WholesalersModule` | Catalogo de consolidadoras mayoristas y aerolineas emisoras | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_persistencia_prisma.md](modulo_persistencia_prisma.md) |
+| `GET` | `/api/v1/wholesalers/:id` | `WholesalersModule` | Detalle individual de consolidadora por ID unico | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_persistencia_prisma.md](modulo_persistencia_prisma.md) |
 
 ---
 

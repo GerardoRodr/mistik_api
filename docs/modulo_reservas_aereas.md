@@ -12,10 +12,11 @@ El modulo de reservas aereas administra el ciclo de vida operativo y transaccion
 - **Controlador principal:** `BookingsController` (`src/bookings/bookings.controller.ts`)
 - **Servicio principal:** `BookingsService` (`src/bookings/bookings.service.ts`)
 - **Motor de estados:** `FlightStateMachineService` (`src/bookings/state-machine/flight-state-machine.service.ts`)
-- **Entidades de datos:** Modelos `Booking` y `Passenger` en `prisma/schema.prisma`
+- **Entidades de datos:** Modelos `Booking`, `Passenger` y `Wholesaler` en `prisma/schema.prisma`
 - **Caracteristicas tecnicas:**
   - Control determinista del flujo de vida mediante maquina de transicion de estados fuertemente tipada.
   - Validacion estricta del localizador PNR de exactamente 6 caracteres alfanumericos para servicios aereos.
+  - Asociacion opcional con consolidadoras mayoristas y aerolineas emisoras (`wholesalers`) evitando texto plano.
   - Registro automatico e inmutable en `AuditLog` para cada mutacion de estado (Ley N. 29733).
   - Consultas indexadas en PostgreSQL por cliente y estado para garantizar latencias inferiores a 5 segundos (RNF `2.2.1.2`).
   - Proteccion transversal mediante `JwtAuthGuard` y `RolesGuard` (`ADMIN`, `SUPERVISOR`, `AGENT`, `ASESOR`).
@@ -63,6 +64,7 @@ El ciclo de vida de una reserva aerea se rige por el enum `BookingStatus`:
 ```json
 {
   "customerId": "7a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
+  "wholesalerId": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
   "serviceType": "FLIGHT",
   "totalAmount": 650.00,
   "currency": "USD",

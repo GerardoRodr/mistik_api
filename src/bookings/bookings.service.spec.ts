@@ -58,6 +58,9 @@ describe('BookingsService (Paquete 6.1.2.1)', () => {
     passenger: {
       updateMany: jest.fn(),
     },
+    wholesaler: {
+      findUnique: jest.fn(),
+    },
     $transaction: jest.fn((callback) => callback(mockPrismaService)),
   };
 
@@ -133,6 +136,52 @@ describe('BookingsService (Paquete 6.1.2.1)', () => {
         BookingStatus.CONFIRMED,
         BookingStatus.CANCELLED,
       ]);
+      expect(mockPrismaService.booking.create).toHaveBeenCalled();
+    });
+
+    it('debe lanzar NotFoundException si la consolidadora especificada no existe', async () => {
+      mockPrismaService.customer.findUnique.mockResolvedValue(mockCustomer);
+      mockPrismaService.wholesaler.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          customerId: 'c-1',
+          wholesalerId: 'w-inexistente',
+          serviceType: ServiceType.FLIGHT,
+          totalAmount: 500,
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('debe registrar reserva asociando consolidadora mayorista exitosamente', async () => {
+      const mockWholesaler = {
+        id: 'w-1',
+        code: 'COSTAMAR',
+        name: 'Costamar Travel',
+        type: 'WHOLESALER',
+      };
+      mockPrismaService.customer.findUnique.mockResolvedValue(mockCustomer);
+      mockPrismaService.wholesaler.findUnique.mockResolvedValue(mockWholesaler);
+      mockPrismaService.booking.create.mockResolvedValue({
+        ...mockBooking,
+        wholesalerId: 'w-1',
+        wholesaler: mockWholesaler,
+      });
+
+      const result = await service.create(
+        {
+          customerId: 'c-1',
+          wholesalerId: 'w-1',
+          serviceType: ServiceType.FLIGHT,
+          totalAmount: 500,
+        },
+        'user-1',
+      );
+
+      expect(result.id).toBe('b-1');
+      expect(mockPrismaService.wholesaler.findUnique).toHaveBeenCalledWith({
+        where: { id: 'w-1' },
+      });
       expect(mockPrismaService.booking.create).toHaveBeenCalled();
     });
   });

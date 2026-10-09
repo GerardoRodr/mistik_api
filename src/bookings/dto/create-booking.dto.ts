@@ -64,6 +64,14 @@ export class CreateBookingDto {
   @IsNotEmpty({ message: 'customerId no debe estar vacio' })
   customerId: string;
 
+  @ApiPropertyOptional({
+    description: 'ID UUID de la consolidadora mayorista o aerolinea emisora',
+    example: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'wholesalerId debe ser un UUID v4 valido' })
+  wholesalerId?: string;
+
   @ApiProperty({
     description: 'Tipo de servicio turistico',
     enum: ServiceType,

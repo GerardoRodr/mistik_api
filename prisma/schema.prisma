@@ -101,6 +101,8 @@ model Booking {
   bookingCode    String         @unique
   customerId     String
   customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  wholesalerId   String?
+  wholesaler     Wholesaler?    @relation(fields: [wholesalerId], references: [id], onDelete: SetNull)
   serviceType    ServiceType
   status         BookingStatus  @default(PENDING)
   totalAmount    Decimal        @db.Decimal(10, 2)
@@ -118,6 +120,7 @@ model Booking {
 
   @@index([status, serviceType])
   @@index([customerId])
+  @@index([wholesalerId])
   @@map("bookings")
 }
 
@@ -242,4 +245,22 @@ model AuditLog {
   createdAt  DateTime  @default(now())
 
   @@map("audit_logs")
+}
+
+// Consolidadoras mayoristas y aerolineas emisoras
+model Wholesaler {
+  id           String    @id @default(uuid())
+  code         String    @unique @db.VarChar(20)
+  name         String    @db.VarChar(100)
+  type         String    @default("WHOLESALER") @db.VarChar(30) // 'WHOLESALER' o 'AIRLINE'
+  ruc          String?   @db.VarChar(11)
+  contactEmail String?   @db.VarChar(100)
+  contactPhone String?   @db.VarChar(20)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bookings     Booking[]
+
+  @@map("wholesalers")
 }
