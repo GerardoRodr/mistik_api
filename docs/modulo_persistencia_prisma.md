@@ -98,9 +98,12 @@ npx prisma generate
 # 4. Crear y aplicar una nueva migracion SQL en desarrollo
 npx prisma migrate dev --name <nombre_descriptivo_de_migracion>
 
-# 5. Ejecutar el sembrado de datos iniciales (Seed con usuarios de prueba)
-npm run prisma:seed
+# 5. Ejecutar el sembrado de datos iniciales en todas las tablas
+npm run db:seed
 
-# 6. Abrir la interfaz grafica interactiva de navegacion (Prisma Studio)
+# 6. Reiniciar totalmente la base de datos (TRUNCATE CASCADE y re-sembrado integral)
+npm run db:reset
+
+# 7. Abrir la interfaz grafica interactiva de navegacion (Prisma Studio)
 npx prisma studio
 ```
