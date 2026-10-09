@@ -8,453 +8,388 @@ import {
   TaskStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
+// Interfaz para el archivo JSON de datos de prueba
+interface SeedData {
+  users: Array<{
+    email: string;
+    name: string;
+    role: string;
+    isActive: boolean;
+  }>;
+  wholesalers: Array<{
+    code: string;
+    name: string;
+    type: string;
+    ruc?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+  }>;
+  customers: Array<{
+    documentType: string;
+    documentNumber: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    address: string;
+  }>;
+  bookings: Array<{
+    bookingCode: string;
+    customerDocument: string;
+    wholesalerCode: string | null;
+    serviceType: string;
+    status: string;
+    totalAmount: number;
+    currency: string;
+    notes: string;
+    createdByUserEmail: string;
+  }>;
+  passengers: Array<{
+    bookingCode: string;
+    customerDocument: string | null;
+    documentType: string;
+    documentNumber: string;
+    firstName: string;
+    lastName: string;
+    pnr: string | null;
+    ticketNumber: string | null;
+    birthDate: string;
+    nationality: string;
+  }>;
+  visaProcesses: Array<{
+    bookingCode: string;
+    passengerDocument: string;
+    confirmationCode: string;
+    consularFeePaid: boolean;
+    consularFeeAmount: number;
+    currency: string;
+    currentStep: string;
+    casDaysOffset: number;
+    embassyDaysOffset: number;
+  }>;
+  serviceTasks: Array<{
+    title: string;
+    description: string;
+    status: string;
+    priority: string;
+    bookingCode: string;
+    assignedToUserEmail: string;
+    daysDue?: number;
+    isCompleted?: boolean;
+  }>;
+  appointments: Array<{
+    title: string;
+    location: string;
+    status: string;
+    daysOffset: number;
+    bookingCode: string;
+  }>;
+  paymentRecords: Array<{
+    bookingCode: string;
+    amount: number;
+    currency: string;
+    paymentMethod: string;
+    operationNumber: string;
+    bankName: string;
+    driveReceiptUrl: string;
+    isVerified: boolean;
+  }>;
+}
+
+// Carga del archivo JSON externo de datos de prueba
+function loadSeedData(): SeedData {
+  const jsonPath = path.join(__dirname, 'seed-data.json');
+  const fileContent = fs.readFileSync(jsonPath, 'utf-8');
+  return JSON.parse(fileContent) as SeedData;
+}
+
 // Funcion principal reutilizable para sembrar datos en todas las tablas
 export async function seedDatabase() {
-  console.log('Sembrando datos en base de datos...');
+  console.log('Cargando datos de prueba desde prisma/seed-data.json...');
+  const data = loadSeedData();
 
   // 1. Usuarios del sistema con roles RBAC
-  const hashedPassword = await bcrypt.hash('Admin2026!', 10);
+  const defaultPasswordHash = await bcrypt.hash('Admin2026!', 10);
+  const userMap = new Map<string, string>();
 
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@mistiktours.com' },
-    update: {},
-    create: {
-      email: 'admin@mistiktours.com',
-      password: hashedPassword,
-      name: 'Administrador Mistik',
-      role: Role.ADMIN,
-      isActive: true,
-    },
-  });
-
-  const supervisor = await prisma.user.upsert({
-    where: { email: 'supervisor@mistiktours.com' },
-    update: {},
-    create: {
-      email: 'supervisor@mistiktours.com',
-      password: hashedPassword,
-      name: 'Rosa Palacios (Supervisor)',
-      role: Role.SUPERVISOR,
-      isActive: true,
-    },
-  });
-
-  const agent = await prisma.user.upsert({
-    where: { email: 'asesor@mistiktours.com' },
-    update: {},
-    create: {
-      email: 'asesor@mistiktours.com',
-      password: hashedPassword,
-      name: 'Mario Vargas (Asesor)',
-      role: Role.AGENT,
-      isActive: true,
-    },
-  });
-
-  console.log('Usuarios del sistema configurados (3 colaboradores).');
+  for (const u of data.users) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {
+        name: u.name,
+        role: u.role as Role,
+        isActive: u.isActive,
+      },
+      create: {
+        email: u.email,
+        password: defaultPasswordHash,
+        name: u.name,
+        role: u.role as Role,
+        isActive: u.isActive,
+      },
+    });
+    userMap.set(user.email, user.id);
+  }
+  console.log(`Usuarios registrados: ${userMap.size}`);
 
   // 2. Catalogo de consolidadoras mayoristas y aerolineas
-  const initialWholesalers = [
-    { code: 'COSTAMAR', name: 'Costamar Travel', type: 'WHOLESALER' },
-    { code: 'AGIL', name: 'Agil Viajes', type: 'WHOLESALER' },
-    { code: 'EUROAMERICAN', name: 'Euroamerican Travel', type: 'WHOLESALER' },
-    { code: 'CTM', name: 'CTM Tours', type: 'WHOLESALER' },
-    { code: 'LATAM', name: 'LATAM Airlines', type: 'AIRLINE' },
-    { code: 'COPA', name: 'Copa Airlines', type: 'AIRLINE' },
-    { code: 'AVIANCA', name: 'Avianca', type: 'AIRLINE' },
-  ];
-
   const wholesalerMap = new Map<string, string>();
-  for (const w of initialWholesalers) {
+  for (const w of data.wholesalers) {
     const item = await prisma.wholesaler.upsert({
       where: { code: w.code },
       update: {
         name: w.name,
         type: w.type,
+        ruc: w.ruc || null,
+        contactEmail: w.contactEmail || null,
+        contactPhone: w.contactPhone || null,
         isActive: true,
       },
       create: {
         code: w.code,
         name: w.name,
         type: w.type,
+        ruc: w.ruc || null,
+        contactEmail: w.contactEmail || null,
+        contactPhone: w.contactPhone || null,
         isActive: true,
       },
     });
     wholesalerMap.set(item.code, item.id);
   }
-
-  console.log(`Consolidadoras registradas (${initialWholesalers.length} registros).`);
+  console.log(`Consolidadoras registradas: ${wholesalerMap.size}`);
 
   // 3. Clientes CRM
-  const customer1 = await prisma.customer.upsert({
-    where: { documentNumber: '74859612' },
-    update: {},
-    create: {
-      documentType: 'DNI',
-      documentNumber: '74859612',
-      firstName: 'Lucia',
-      lastName: 'Mendez',
-      email: 'lucia.mendez@gmail.com',
-      phoneNumber: '+51987654321',
-      address: 'Av. Larco 456, Trujillo',
-    },
-  });
-
-  const customer2 = await prisma.customer.upsert({
-    where: { documentNumber: '70112233' },
-    update: {},
-    create: {
-      documentType: 'DNI',
-      documentNumber: '70112233',
-      firstName: 'Carlos',
-      lastName: 'Mendoza',
-      email: 'carlos.mendoza@hotmail.com',
-      phoneNumber: '+51976543210',
-      address: 'Jr. Pizarro 789, Trujillo',
-    },
-  });
-
-  const customer3 = await prisma.customer.upsert({
-    where: { documentNumber: 'P01234567' },
-    update: {},
-    create: {
-      documentType: 'PASAPORTE',
-      documentNumber: 'P01234567',
-      firstName: 'Sofia',
-      lastName: 'Flores',
-      email: 'sofia.flores@yahoo.com',
-      phoneNumber: '+51965432109',
-      address: 'Calle Los Cedros 123, Lima',
-    },
-  });
-
-  console.log('Clientes CRM configurados (3 clientes).');
+  const customerMap = new Map<string, string>();
+  for (const c of data.customers) {
+    const customer = await prisma.customer.upsert({
+      where: { documentNumber: c.documentNumber },
+      update: {
+        documentType: c.documentType,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        email: c.email,
+        phoneNumber: c.phoneNumber,
+        address: c.address,
+      },
+      create: {
+        documentType: c.documentType,
+        documentNumber: c.documentNumber,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        email: c.email,
+        phoneNumber: c.phoneNumber,
+        address: c.address,
+      },
+    });
+    customerMap.set(customer.documentNumber, customer.id);
+  }
+  console.log(`Clientes CRM registrados: ${customerMap.size}`);
 
   // 4. Expedientes y reservas de viaje
-  const booking1 = await prisma.booking.upsert({
-    where: { bookingCode: 'RES-2026-001' },
-    update: {},
-    create: {
-      bookingCode: 'RES-2026-001',
-      customerId: customer1.id,
-      wholesalerId: wholesalerMap.get('LATAM'),
-      serviceType: ServiceType.FLIGHT,
-      status: BookingStatus.CONFIRMED,
-      totalAmount: 650.0,
-      currency: Currency.USD,
-      notes: 'Vuelo directo Trujillo - Lima ida y vuelta confirmado',
-      createdById: agent.id,
-    },
-  });
+  const bookingMap = new Map<string, string>();
+  for (const b of data.bookings) {
+    const customerId = customerMap.get(b.customerDocument);
+    if (!customerId) continue;
 
-  const booking2 = await prisma.booking.upsert({
-    where: { bookingCode: 'RES-2026-002' },
-    update: {},
-    create: {
-      bookingCode: 'RES-2026-002',
-      customerId: customer2.id,
-      wholesalerId: wholesalerMap.get('COSTAMAR'),
-      serviceType: ServiceType.PACKAGE,
-      status: BookingStatus.IN_PROCESS,
-      totalAmount: 1850.0,
-      currency: Currency.USD,
-      notes: 'Paquete turistico Cusco Imperial 4D3N todo incluido',
-      createdById: supervisor.id,
-    },
-  });
+    const wholesalerId = b.wholesalerCode ? wholesalerMap.get(b.wholesalerCode) || null : null;
+    const createdById = userMap.get(b.createdByUserEmail) || null;
 
-  const booking3 = await prisma.booking.upsert({
-    where: { bookingCode: 'RES-2026-003' },
-    update: {},
-    create: {
-      bookingCode: 'RES-2026-003',
-      customerId: customer3.id,
-      serviceType: ServiceType.VISA,
-      status: BookingStatus.IN_PROCESS,
-      totalAmount: 350.0,
-      currency: Currency.USD,
-      notes: 'Asesoria consular para visa americana B1/B2',
-      createdById: agent.id,
-    },
-  });
-
-  const booking4 = await prisma.booking.upsert({
-    where: { bookingCode: 'RES-2026-004' },
-    update: {},
-    create: {
-      bookingCode: 'RES-2026-004',
-      customerId: customer1.id,
-      wholesalerId: wholesalerMap.get('COPA'),
-      serviceType: ServiceType.FLIGHT,
-      status: BookingStatus.PENDING,
-      totalAmount: 420.0,
-      currency: Currency.USD,
-      notes: 'Cotizacion preliminar de vuelo Lima - Panama',
-      createdById: agent.id,
-    },
-  });
-
-  console.log('Reservas configuradas (4 expedientes).');
+    const booking = await prisma.booking.upsert({
+      where: { bookingCode: b.bookingCode },
+      update: {
+        customerId,
+        wholesalerId,
+        serviceType: b.serviceType as ServiceType,
+        status: b.status as BookingStatus,
+        totalAmount: b.totalAmount,
+        currency: b.currency as Currency,
+        notes: b.notes,
+        createdById,
+      },
+      create: {
+        bookingCode: b.bookingCode,
+        customerId,
+        wholesalerId,
+        serviceType: b.serviceType as ServiceType,
+        status: b.status as BookingStatus,
+        totalAmount: b.totalAmount,
+        currency: b.currency as Currency,
+        notes: b.notes,
+        createdById,
+      },
+    });
+    bookingMap.set(booking.bookingCode, booking.id);
+  }
+  console.log(`Reservas registradas: ${bookingMap.size}`);
 
   // 5. Pasajeros individuales asociados
-  // Limpiamos pasajeros previos asociados a estas reservas para garantizar idempotencia en desarrollo
+  // Limpiamos pasajeros asociados a estas reservas antes de reinsertar para garantizar consistencia
+  const bookingIds = Array.from(bookingMap.values());
   await prisma.passenger.deleteMany({
-    where: {
-      bookingId: {
-        in: [booking1.id, booking2.id, booking3.id, booking4.id],
+    where: { bookingId: { in: bookingIds } },
+  });
+
+  const passengerMap = new Map<string, string>();
+  for (const p of data.passengers) {
+    const bookingId = bookingMap.get(p.bookingCode);
+    if (!bookingId) continue;
+
+    const customerId = p.customerDocument ? customerMap.get(p.customerDocument) || null : null;
+
+    const passenger = await prisma.passenger.create({
+      data: {
+        bookingId,
+        customerId,
+        documentType: p.documentType,
+        documentNumber: p.documentNumber,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        pnr: p.pnr,
+        ticketNumber: p.ticketNumber,
+        birthDate: p.birthDate ? new Date(p.birthDate) : null,
+        nationality: p.nationality,
       },
-    },
-  });
+    });
+    passengerMap.set(`${p.bookingCode}_${p.documentNumber}`, passenger.id);
+  }
+  console.log(`Pasajeros registrados: ${passengerMap.size}`);
 
-  const passenger1 = await prisma.passenger.create({
-    data: {
-      bookingId: booking1.id,
-      customerId: customer1.id,
-      documentType: customer1.documentType,
-      documentNumber: customer1.documentNumber,
-      firstName: customer1.firstName,
-      lastName: customer1.lastName,
-      pnr: 'LIM456',
-      ticketNumber: '045-1234567890',
-      birthDate: new Date('1995-05-15'),
-      nationality: 'Peruana',
-    },
-  });
-
-  await prisma.passenger.create({
-    data: {
-      bookingId: booking2.id,
-      customerId: customer2.id,
-      documentType: customer2.documentType,
-      documentNumber: customer2.documentNumber,
-      firstName: customer2.firstName,
-      lastName: customer2.lastName,
-      pnr: 'CUZ789',
-      ticketNumber: '045-2345678901',
-      birthDate: new Date('1988-11-20'),
-      nationality: 'Peruana',
-    },
-  });
-
-  await prisma.passenger.create({
-    data: {
-      bookingId: booking2.id,
-      documentType: 'DNI',
-      documentNumber: '70998877',
-      firstName: 'Maria',
-      lastName: 'Rodriguez',
-      pnr: 'CUZ789',
-      ticketNumber: '045-2345678902',
-      birthDate: new Date('1990-03-10'),
-      nationality: 'Peruana',
-    },
-  });
-
-  const passengerSofia = await prisma.passenger.create({
-    data: {
-      bookingId: booking3.id,
-      customerId: customer3.id,
-      documentType: customer3.documentType,
-      documentNumber: customer3.documentNumber,
-      firstName: customer3.firstName,
-      lastName: customer3.lastName,
-      birthDate: new Date('1992-08-25'),
-      nationality: 'Peruana',
-    },
-  });
-
-  console.log('Pasajeros configurados (4 pasajeros).');
-
-  // 6. Proceso Consular de Visa
-  // Borramos procesos y citas previas vinculadas para evitar duplicados en re-ejecucion
+  // 6. Procesos consulares de visa
   await prisma.appointment.deleteMany({
-    where: {
-      task: { bookingId: { in: [booking1.id, booking2.id, booking3.id] } },
-    },
+    where: { task: { bookingId: { in: bookingIds } } },
   });
   await prisma.visaProcess.deleteMany({
-    where: { bookingId: booking3.id },
+    where: { bookingId: { in: bookingIds } },
   });
 
   const now = new Date();
-  const casDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const embassyDate = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000);
+  const visaProcessMap = new Map<string, string>();
 
-  const visaProcess = await prisma.visaProcess.create({
-    data: {
-      bookingId: booking3.id,
-      passengerId: passengerSofia.id,
-      confirmationCode: 'AA00B9C8D7',
-      consularFeePaid: true,
-      consularFeeAmount: 185.0,
-      currency: Currency.USD,
-      currentStep: 'CONSULAR_APPOINTMENT',
-      casDate,
-      embassyDate,
-    },
-  });
+  for (const vp of data.visaProcesses) {
+    const bookingId = bookingMap.get(vp.bookingCode);
+    const passengerId = passengerMap.get(`${vp.bookingCode}_${vp.passengerDocument}`);
+    if (!bookingId) continue;
 
-  console.log('Proceso de visa configurado (1 expediente consular).');
+    const casDate = new Date(now.getTime() + vp.casDaysOffset * 24 * 60 * 60 * 1000);
+    const embassyDate = new Date(now.getTime() + vp.embassyDaysOffset * 24 * 60 * 60 * 1000);
+
+    const process = await prisma.visaProcess.create({
+      data: {
+        bookingId,
+        passengerId: passengerId || null,
+        confirmationCode: vp.confirmationCode,
+        consularFeePaid: vp.consularFeePaid,
+        consularFeeAmount: vp.consularFeeAmount,
+        currency: vp.currency as Currency,
+        currentStep: vp.currentStep,
+        casDate,
+        embassyDate,
+      },
+    });
+    visaProcessMap.set(vp.bookingCode, process.id);
+  }
+  console.log(`Procesos consulares registrados: ${visaProcessMap.size}`);
 
   // 7. Tareas operativas Kanban
   await prisma.serviceTask.deleteMany({
-    where: {
-      bookingId: { in: [booking1.id, booking2.id, booking3.id, booking4.id] },
-    },
+    where: { bookingId: { in: bookingIds } },
   });
 
-  const task1 = await prisma.serviceTask.create({
-    data: {
-      title: 'Emision de boletos aereos Lima - Trujillo',
-      description: 'Emitir boletos en GDS Latam y enviar correo con confirmacion',
-      status: TaskStatus.DONE,
-      priority: Priority.HIGH,
-      bookingId: booking1.id,
-      assignedToId: agent.id,
-      completedAt: new Date(),
-    },
-  });
+  const taskMap = new Map<string, string>();
+  for (const t of data.serviceTasks) {
+    const bookingId = bookingMap.get(t.bookingCode);
+    const assignedToId = userMap.get(t.assignedToUserEmail) || null;
 
-  const task2 = await prisma.serviceTask.create({
-    data: {
-      title: 'Confirmacion de vouchers de hotel en Cusco',
-      description: 'Coordinar con operador Costamar los traslados y hotel Monasterio',
-      status: TaskStatus.IN_PROGRESS,
-      priority: Priority.URGENT,
-      dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
-      bookingId: booking2.id,
-      assignedToId: supervisor.id,
-    },
-  });
+    const dueDate = t.daysDue ? new Date(now.getTime() + t.daysDue * 24 * 60 * 60 * 1000) : null;
+    const completedAt = t.isCompleted ? new Date() : null;
 
-  const task3 = await prisma.serviceTask.create({
-    data: {
-      title: 'Revision de formulario DS-160 y preparacion de entrevista',
-      description: 'Validar confirmacion DS-160 y agendar simulacro de entrevista',
-      status: TaskStatus.IN_PROGRESS,
-      priority: Priority.HIGH,
-      dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
-      bookingId: booking3.id,
-      assignedToId: agent.id,
-    },
-  });
+    const task = await prisma.serviceTask.create({
+      data: {
+        title: t.title,
+        description: t.description,
+        status: t.status as TaskStatus,
+        priority: t.priority as Priority,
+        bookingId: bookingId || null,
+        assignedToId,
+        dueDate,
+        completedAt,
+      },
+    });
+    taskMap.set(t.title, task.id);
+  }
+  console.log(`Tareas operativas Kanban registradas: ${taskMap.size}`);
 
-  await prisma.serviceTask.create({
-    data: {
-      title: 'Seguimiento de cotizacion pendiente Copa Airlines',
-      description: 'Consultar si el cliente autoriza la emision de vuelos a Panama',
-      status: TaskStatus.PENDING,
-      priority: Priority.MEDIUM,
-      dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
-      bookingId: booking4.id,
-      assignedToId: agent.id,
-    },
-  });
+  // 8. Citas consulares u operativas
+  for (const a of data.appointments) {
+    const appointmentDate = new Date(now.getTime() + a.daysOffset * 24 * 60 * 60 * 1000);
+    const visaProcessId = visaProcessMap.get(a.bookingCode) || null;
 
-  console.log('Tareas operativas Kanban configuradas (4 tareas).');
+    // Vincula a la tarea de visa si existe
+    const taskId = taskMap.get('Revision de formulario DS-160 y preparacion de entrevista') || null;
 
-  // 8. Citas Consulares u Operativas
-  await prisma.appointment.create({
-    data: {
-      title: 'Cita CAS Huancavelica - Toma de biometricos',
-      appointmentDate: casDate,
-      location: 'Centro de Atencion CAS Lima, Av. Primavera 120, Miraflores',
-      status: 'SCHEDULED',
-      reminderSent: false,
-      taskId: task3.id,
-      visaProcessId: visaProcess.id,
-    },
-  });
+    await prisma.appointment.create({
+      data: {
+        title: a.title,
+        appointmentDate,
+        location: a.location,
+        status: a.status,
+        reminderSent: false,
+        taskId,
+        visaProcessId,
+      },
+    });
+  }
+  console.log(`Citas consulares registradas: ${data.appointments.length}`);
 
-  await prisma.appointment.create({
-    data: {
-      title: 'Entrevista Consular Embajada de Estados Unidos',
-      appointmentDate: embassyDate,
-      location: 'Embajada de EE.UU., Av. La Encalada cdra 17, Surco, Lima',
-      status: 'SCHEDULED',
-      reminderSent: false,
-      taskId: task3.id,
-      visaProcessId: visaProcess.id,
-    },
-  });
-
-  console.log('Citas consulares configuradas (2 citas programadas).');
-
-  // 9. Registro de Pagos
+  // 9. Registro de pagos
   await prisma.paymentRecord.deleteMany({
-    where: {
-      bookingId: { in: [booking1.id, booking2.id, booking3.id, booking4.id] },
-    },
+    where: { bookingId: { in: bookingIds } },
   });
 
-  await prisma.paymentRecord.create({
-    data: {
-      bookingId: booking1.id,
-      amount: 650.0,
-      currency: Currency.USD,
-      paymentMethod: 'TRANSFERENCIA_BANCARIA',
-      operationNumber: 'OP-98765432',
-      bankName: 'BCP',
-      driveReceiptUrl:
-        'https://drive.google.com/file/d/1a2b3c4d5e_comprobante_bcp_001/view',
-      isVerified: true,
-      paymentDate: new Date(),
-    },
-  });
+  for (const p of data.paymentRecords) {
+    const bookingId = bookingMap.get(p.bookingCode);
+    if (!bookingId) continue;
 
-  await prisma.paymentRecord.create({
-    data: {
-      bookingId: booking2.id,
-      amount: 1000.0,
-      currency: Currency.USD,
-      paymentMethod: 'TARJETA_CREDITO',
-      operationNumber: 'OP-45678912',
-      bankName: 'BBVA',
-      driveReceiptUrl:
-        'https://drive.google.com/file/d/2b3c4d5e6f_comprobante_bbva_002/view',
-      isVerified: true,
-      paymentDate: new Date(),
-    },
-  });
-
-  await prisma.paymentRecord.create({
-    data: {
-      bookingId: booking3.id,
-      amount: 350.0,
-      currency: Currency.USD,
-      paymentMethod: 'YAPE',
-      operationNumber: 'OP-12345678',
-      bankName: 'BCP',
-      driveReceiptUrl:
-        'https://drive.google.com/file/d/3c4d5e6f7g_comprobante_yape_003/view',
-      isVerified: true,
-      paymentDate: new Date(),
-    },
-  });
-
-  console.log('Registros de pagos configurados (3 transacciones).');
+    await prisma.paymentRecord.create({
+      data: {
+        bookingId,
+        amount: p.amount,
+        currency: p.currency as Currency,
+        paymentMethod: p.paymentMethod,
+        operationNumber: p.operationNumber,
+        bankName: p.bankName,
+        driveReceiptUrl: p.driveReceiptUrl,
+        isVerified: p.isVerified,
+        paymentDate: new Date(),
+      },
+    });
+  }
+  console.log(`Registros de pago creados: ${data.paymentRecords.length}`);
 
   // 10. Auditoria inicial
+  const adminId = userMap.get('admin@mistiktours.com');
   await prisma.auditLog.create({
     data: {
-      userId: admin.id,
+      userId: adminId || null,
       action: 'SYSTEM_SEED',
       entityName: 'DATABASE',
       entityId: 'ALL',
       ipAddress: '127.0.0.1',
-      userAgent: 'Prisma Seeder Script',
+      userAgent: 'Prisma Seeder Script (JSON Driven)',
       newValues: {
         status: 'SUCCESS',
-        description: 'Datos de prueba integrales sembrados exitosamente',
+        description: 'Datos de prueba integrales cargados desde seed-data.json',
       },
     },
   });
-
-  console.log('Registro de auditoria inicial registrado.');
-  console.log('Sembrado integral completado con exito.');
+  console.log('Auditoria inicial registrada.');
+  console.log('Sembrado integral concluido exitosamente.');
 }
 
 async function main() {

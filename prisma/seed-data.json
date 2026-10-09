@@ -1,0 +1,309 @@
+{
+  "users": [
+    {
+      "email": "admin@mistiktours.com",
+      "name": "Administrador Mistik",
+      "role": "ADMIN",
+      "isActive": true
+    },
+    {
+      "email": "supervisor@mistiktours.com",
+      "name": "Rosa Palacios (Supervisor)",
+      "role": "SUPERVISOR",
+      "isActive": true
+    },
+    {
+      "email": "asesor@mistiktours.com",
+      "name": "Mario Vargas (Asesor)",
+      "role": "AGENT",
+      "isActive": true
+    }
+  ],
+  "wholesalers": [
+    { "code": "COSTAMAR", "name": "Costamar Travel", "type": "WHOLESALER", "ruc": "20100123456", "contactEmail": "operaciones@costamar.com", "contactPhone": "+5116169000" },
+    { "code": "AGIL", "name": "Agil Viajes", "type": "WHOLESALER", "ruc": "20200234567", "contactEmail": "reservas@agilviajes.com", "contactPhone": "+5116168000" },
+    { "code": "EUROAMERICAN", "name": "Euroamerican Travel", "type": "WHOLESALER", "ruc": "20300345678", "contactEmail": "soporte@euroamerican.com", "contactPhone": "+5116167000" },
+    { "code": "CTM", "name": "CTM Tours", "type": "WHOLESALER", "ruc": "20400456789", "contactEmail": "agencias@ctmtours.com", "contactPhone": "+5116166000" },
+    { "code": "LATAM", "name": "LATAM Airlines", "type": "AIRLINE", "ruc": "20500567890", "contactEmail": "agencias.pe@latam.com", "contactPhone": "+5112138200" },
+    { "code": "COPA", "name": "Copa Airlines", "type": "AIRLINE", "ruc": "20600678901", "contactEmail": "ventasperu@copaair.com", "contactPhone": "+5116100800" },
+    { "code": "AVIANCA", "name": "Avianca", "type": "AIRLINE", "ruc": "20700789012", "contactEmail": "soportepe@avianca.com", "contactPhone": "+5115118222" }
+  ],
+  "customers": [
+    {
+      "documentType": "DNI",
+      "documentNumber": "74859612",
+      "firstName": "Lucia",
+      "lastName": "Mendez",
+      "email": "lucia.mendez@gmail.com",
+      "phoneNumber": "+51987654321",
+      "address": "Av. Larco 456, Trujillo"
+    },
+    {
+      "documentType": "DNI",
+      "documentNumber": "70112233",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "email": "carlos.mendoza@hotmail.com",
+      "phoneNumber": "+51976543210",
+      "address": "Jr. Pizarro 789, Trujillo"
+    },
+    {
+      "documentType": "PASAPORTE",
+      "documentNumber": "P01234567",
+      "firstName": "Sofia",
+      "lastName": "Flores",
+      "email": "sofia.flores@yahoo.com",
+      "phoneNumber": "+51965432109",
+      "address": "Calle Los Cedros 123, Lima"
+    }
+  ],
+  "bookings": [
+    {
+      "bookingCode": "RES-2026-001",
+      "customerDocument": "74859612",
+      "wholesalerCode": "LATAM",
+      "serviceType": "FLIGHT",
+      "status": "CONFIRMED",
+      "totalAmount": 650.0,
+      "currency": "USD",
+      "notes": "Vuelo directo Trujillo - Lima ida y vuelta confirmado",
+      "createdByUserEmail": "asesor@mistiktours.com"
+    },
+    {
+      "bookingCode": "RES-2026-002",
+      "customerDocument": "70112233",
+      "wholesalerCode": "COSTAMAR",
+      "serviceType": "PACKAGE",
+      "status": "IN_PROCESS",
+      "totalAmount": 1850.0,
+      "currency": "USD",
+      "notes": "Paquete turistico Cusco Imperial 4D3N todo incluido",
+      "createdByUserEmail": "supervisor@mistiktours.com"
+    },
+    {
+      "bookingCode": "RES-2026-003",
+      "customerDocument": "P01234567",
+      "wholesalerCode": null,
+      "serviceType": "VISA",
+      "status": "IN_PROCESS",
+      "totalAmount": 350.0,
+      "currency": "USD",
+      "notes": "Asesoria consular para visa americana B1/B2",
+      "createdByUserEmail": "asesor@mistiktours.com"
+    },
+    {
+      "bookingCode": "RES-2026-004",
+      "customerDocument": "74859612",
+      "wholesalerCode": "COPA",
+      "serviceType": "FLIGHT",
+      "status": "PENDING",
+      "totalAmount": 420.0,
+      "currency": "USD",
+      "notes": "Cotizacion de vuelo Lima - Panama lista para confirmar",
+      "createdByUserEmail": "asesor@mistiktours.com"
+    },
+    {
+      "bookingCode": "RES-2026-005",
+      "customerDocument": "70112233",
+      "wholesalerCode": "LATAM",
+      "serviceType": "FLIGHT",
+      "status": "CONFIRMED",
+      "totalAmount": 890.0,
+      "currency": "USD",
+      "notes": "Vuelo Lima - Miami confirmado listo para procesar emision",
+      "createdByUserEmail": "supervisor@mistiktours.com"
+    }
+  ],
+  "passengers": [
+    {
+      "bookingCode": "RES-2026-001",
+      "customerDocument": "74859612",
+      "documentType": "DNI",
+      "documentNumber": "74859612",
+      "firstName": "Lucia",
+      "lastName": "Mendez",
+      "pnr": "LIM456",
+      "ticketNumber": "045-1234567890",
+      "birthDate": "1995-05-15T00:00:00.000Z",
+      "nationality": "Peruana"
+    },
+    {
+      "bookingCode": "RES-2026-002",
+      "customerDocument": "70112233",
+      "documentType": "DNI",
+      "documentNumber": "70112233",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "pnr": "CUZ789",
+      "ticketNumber": "045-2345678901",
+      "birthDate": "1988-11-20T00:00:00.000Z",
+      "nationality": "Peruana"
+    },
+    {
+      "bookingCode": "RES-2026-002",
+      "customerDocument": null,
+      "documentType": "DNI",
+      "documentNumber": "70998877",
+      "firstName": "Maria",
+      "lastName": "Rodriguez",
+      "pnr": "CUZ789",
+      "ticketNumber": "045-2345678902",
+      "birthDate": "1990-03-10T00:00:00.000Z",
+      "nationality": "Peruana"
+    },
+    {
+      "bookingCode": "RES-2026-003",
+      "customerDocument": "P01234567",
+      "documentType": "PASAPORTE",
+      "documentNumber": "P01234567",
+      "firstName": "Sofia",
+      "lastName": "Flores",
+      "pnr": null,
+      "ticketNumber": null,
+      "birthDate": "1992-08-25T00:00:00.000Z",
+      "nationality": "Peruana"
+    },
+    {
+      "bookingCode": "RES-2026-004",
+      "customerDocument": "74859612",
+      "documentType": "DNI",
+      "documentNumber": "74859612",
+      "firstName": "Lucia",
+      "lastName": "Mendez",
+      "pnr": "PTY789",
+      "ticketNumber": null,
+      "birthDate": "1995-05-15T00:00:00.000Z",
+      "nationality": "Peruana"
+    },
+    {
+      "bookingCode": "RES-2026-005",
+      "customerDocument": "70112233",
+      "documentType": "DNI",
+      "documentNumber": "70112233",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "pnr": "MIA123",
+      "ticketNumber": "045-3456789012",
+      "birthDate": "1988-11-20T00:00:00.000Z",
+      "nationality": "Peruana"
+    }
+  ],
+  "visaProcesses": [
+    {
+      "bookingCode": "RES-2026-003",
+      "passengerDocument": "P01234567",
+      "confirmationCode": "AA00B9C8D7",
+      "consularFeePaid": true,
+      "consularFeeAmount": 185.0,
+      "currency": "USD",
+      "currentStep": "CONSULAR_APPOINTMENT",
+      "casDaysOffset": 30,
+      "embassyDaysOffset": 45
+    }
+  ],
+  "serviceTasks": [
+    {
+      "title": "Emision de boletos aereos Lima - Trujillo",
+      "description": "Emitir boletos en GDS Latam y enviar correo con confirmacion",
+      "status": "DONE",
+      "priority": "HIGH",
+      "bookingCode": "RES-2026-001",
+      "assignedToUserEmail": "asesor@mistiktours.com",
+      "isCompleted": true
+    },
+    {
+      "title": "Confirmacion de vouchers de hotel en Cusco",
+      "description": "Coordinar con operador Costamar los traslados y hotel Monasterio",
+      "status": "IN_PROGRESS",
+      "priority": "URGENT",
+      "bookingCode": "RES-2026-002",
+      "assignedToUserEmail": "supervisor@mistiktours.com",
+      "daysDue": 3
+    },
+    {
+      "title": "Revision de formulario DS-160 y preparacion de entrevista",
+      "description": "Validar confirmacion DS-160 y agendar simulacro de entrevista",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH",
+      "bookingCode": "RES-2026-003",
+      "assignedToUserEmail": "asesor@mistiktours.com",
+      "daysDue": 5
+    },
+    {
+      "title": "Seguimiento de cotizacion de vuelo Copa Airlines",
+      "description": "Consultar si el cliente autoriza la emision de boletos a Panama con PNR PTY789",
+      "status": "PENDING",
+      "priority": "MEDIUM",
+      "bookingCode": "RES-2026-004",
+      "assignedToUserEmail": "asesor@mistiktours.com",
+      "daysDue": 2
+    },
+    {
+      "title": "Control de emision de vuelos a Miami",
+      "description": "Verificar ticket y emitir comprobante para reserva RES-2026-005",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH",
+      "bookingCode": "RES-2026-005",
+      "assignedToUserEmail": "supervisor@mistiktours.com",
+      "daysDue": 4
+    }
+  ],
+  "appointments": [
+    {
+      "title": "Cita CAS Huancavelica - Toma de biometricos",
+      "location": "Centro de Atencion CAS Lima, Av. Primavera 120, Miraflores",
+      "status": "SCHEDULED",
+      "daysOffset": 30,
+      "bookingCode": "RES-2026-003"
+    },
+    {
+      "title": "Entrevista Consular Embajada de Estados Unidos",
+      "location": "Embajada de EE.UU., Av. La Encalada cdra 17, Surco, Lima",
+      "status": "SCHEDULED",
+      "daysOffset": 45,
+      "bookingCode": "RES-2026-003"
+    }
+  ],
+  "paymentRecords": [
+    {
+      "bookingCode": "RES-2026-001",
+      "amount": 650.0,
+      "currency": "USD",
+      "paymentMethod": "TRANSFERENCIA_BANCARIA",
+      "operationNumber": "OP-98765432",
+      "bankName": "BCP",
+      "driveReceiptUrl": "https://drive.google.com/file/d/1a2b3c4d5e_comprobante_bcp_001/view",
+      "isVerified": true
+    },
+    {
+      "bookingCode": "RES-2026-002",
+      "amount": 1000.0,
+      "currency": "USD",
+      "paymentMethod": "TARJETA_CREDITO",
+      "operationNumber": "OP-45678912",
+      "bankName": "BBVA",
+      "driveReceiptUrl": "https://drive.google.com/file/d/2b3c4d5e6f_comprobante_bbva_002/view",
+      "isVerified": true
+    },
+    {
+      "bookingCode": "RES-2026-003",
+      "amount": 350.0,
+      "currency": "USD",
+      "paymentMethod": "YAPE",
+      "operationNumber": "OP-12345678",
+      "bankName": "BCP",
+      "driveReceiptUrl": "https://drive.google.com/file/d/3c4d5e6f7g_comprobante_yape_003/view",
+      "isVerified": true
+    },
+    {
+      "bookingCode": "RES-2026-005",
+      "amount": 890.0,
+      "currency": "USD",
+      "paymentMethod": "TRANSFERENCIA_BANCARIA",
+      "operationNumber": "OP-55667788",
+      "bankName": "Interbank",
+      "driveReceiptUrl": "https://drive.google.com/file/d/4d5e6f7g8h_comprobante_ibk_005/view",
+      "isVerified": true
+    }
+  ]
+}
