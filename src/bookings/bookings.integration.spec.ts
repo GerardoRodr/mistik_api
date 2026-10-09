@@ -83,6 +83,29 @@ describe('Pruebas de Integracion - BookingsModule (Semana 7 - 6.1.2.1)', () => {
         },
       }),
     ),
+    findPassengersByBooking: jest.fn().mockImplementation((idOrPnr) =>
+      Promise.resolve({
+        booking: {
+          id: validUuid,
+          bookingCode: 'RES-TEST01',
+          serviceType: ServiceType.FLIGHT,
+          status: BookingStatus.PENDING,
+        },
+        passengers: [
+          {
+            id: 'p-1',
+            documentType: 'DNI',
+            documentNumber: '74859612',
+            firstName: 'Lucia',
+            lastName: 'Mendez',
+            pnr: 'LIM456',
+            ticketNumber: '045-1234567890',
+            issueStatus: 'EMITIDO',
+          },
+        ],
+        totalPassengers: 1,
+      }),
+    ),
   };
 
   const mockUsersService = {
@@ -210,6 +233,17 @@ describe('Pruebas de Integracion - BookingsModule (Semana 7 - 6.1.2.1)', () => {
         .set('Authorization', `Bearer ${agentToken}`);
 
       expect(response.status).toBe(400);
+    });
+
+    it('GET /api/v1/bookings/:idOrPnr/passengers debe retornar pasajeros con estado de emision', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/bookings/LIM456/passengers')
+        .set('Authorization', `Bearer ${agentToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.passengers).toHaveLength(1);
+      expect(response.body.passengers[0].issueStatus).toBe('EMITIDO');
+      expect(response.body.totalPassengers).toBe(1);
     });
   });
 });
