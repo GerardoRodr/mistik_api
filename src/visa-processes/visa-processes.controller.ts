@@ -27,8 +27,11 @@ import { VisaProcessesService } from './visa-processes.service';
 import { CreateVisaProcessDto } from './dto/create-visa-process.dto';
 import { UpdateVisaStatusDto } from './dto/update-visa-status.dto';
 import { QueryVisaProcessDto } from './dto/query-visa-process.dto';
+import { CreateVisaAppointmentDto } from './dto/create-visa-appointment.dto';
+import { QueryMultiannualAppointmentsDto } from './dto/query-multiannual-appointments.dto';
 
-// Controlador REST para gestion y avance de tramites consulares DS-160 (WBS 7.1.2.1)
+// Controlador REST para gestion y avance de tramites consulares DS-160 (WBS 7.1.2.1 y 7.1.2.2)
+@ApiTags('Visas')
 @ApiTags('Tramites Consulares')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -75,6 +78,24 @@ export class VisaProcessesController {
   })
   async findAll(@Query() query: QueryVisaProcessDto) {
     return this.visaService.findAll(query);
+  }
+
+  // Consulta indexada multianual de citas consulares a largo plazo (WBS 7.1.2.2)
+  @Get('appointments/multiannual')
+  @Roles(Role.ADMIN, Role.SUPERVISOR, Role.AGENT, 'ASESOR')
+  @ApiOperation({
+    summary: 'Consulta indexada de citas consulares multianuales (2026-2027)',
+    description:
+      'Retorna citas consulares filtradas por rango multianual, sede consular y cliente titular',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de citas consulares multianuales obtenido exitosamente',
+  })
+  async findMultiannualAppointments(
+    @Query() query: QueryMultiannualAppointmentsDto,
+  ) {
+    return this.visaService.findMultiannualAppointments(query);
   }
 
   // Obtener detalle completo de un tramite con citas y linea de tiempo
@@ -129,4 +150,35 @@ export class VisaProcessesController {
   ) {
     return this.visaService.transitionStatus(id, dto, user);
   }
+
+  // Programar cita consular y registrar arancel MRV (WBS 7.1.2.2)
+  @Post(':id/appointments')
+  @HttpCode(HttpStatus.CREATED)
+  @Roles(Role.ADMIN, Role.SUPERVISOR, Role.AGENT, 'ASESOR')
+  @ApiOperation({
+    summary: 'Registrar cita consular y codigo de pago MRV (185 USD)',
+    description:
+      'Registra fecha, hora, sede consular (Embajada en Lima) y opcionalmente codigo de arancel MRV',
+  })
+  @ApiParam({ name: 'id', description: 'UUID del tramite consular' })
+  @ApiResponse({
+    status: 201,
+    description: 'Cita consular programada exitosamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de cita o codigo MRV invalidos',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tramite consular no encontrado',
+  })
+  async scheduleAppointment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateVisaAppointmentDto,
+    @CurrentUser() user: { id: string; email: string; role: string },
+  ) {
+    return this.visaService.scheduleAppointment(id, dto, user);
+  }
 }
+
