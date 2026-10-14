@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { CustomersModule } from './customers/customers.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { VisaProcessesModule } from './visa-processes/visa-processes.module';
+import { WholesalersModule } from './wholesalers/wholesalers.module';
+import { TasksModule } from './tasks/tasks.module';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -19,6 +21,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     CustomersModule,
     BookingsModule,
     VisaProcessesModule,
+    WholesalersModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [
