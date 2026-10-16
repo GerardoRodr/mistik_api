@@ -71,8 +71,14 @@ La siguiente tabla resume todos los endpoints disponibles en el backend, indican
 | `GET` | `/api/v1/visa-processes` | `VisaProcessesModule` | Listado paginado de tramites consulares con filtros | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
 | `GET` | `/api/v1/visa-processes/:id` | `VisaProcessesModule` | Consulta expediente consular con citas y linea de tiempo | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
 | `PATCH` | `/api/v1/visa-processes/:id/status` | `VisaProcessesModule` | Avanza fase consular en la maquina de estados | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
+| `POST` | `/api/v1/visa-processes/:id/appointments` | `VisaProcessesModule` | Registra cita consular y arancel MRV ($185 USD) | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
+| `GET` | `/api/v1/visa-processes/appointments/multiannual` | `VisaProcessesModule` | Consulta indexada de citas futuras 2026-2027 | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tramites_consulares.md](modulo_tramites_consulares.md) |
 | `GET` | `/api/v1/wholesalers` | `WholesalersModule` | Catalogo de consolidadoras mayoristas y aerolineas emisoras | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_persistencia_prisma.md](modulo_persistencia_prisma.md) |
 | `GET` | `/api/v1/wholesalers/:id` | `WholesalersModule` | Detalle individual de consolidadora por ID unico | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_persistencia_prisma.md](modulo_persistencia_prisma.md) |
+| `PATCH` | `/api/v1/tasks/:id/status` | `TasksModule` | Transiciona estado de tarjeta Kanban con movedAt y completedAt | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tablero_kanban.md](modulo_tablero_kanban.md) |
+| `GET` | `/api/v1/tasks` | `TasksModule` | Listado de tareas con filtros y agrupacion por columnas Kanban | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tablero_kanban.md](modulo_tablero_kanban.md) |
+| `GET` | `/api/v1/tasks/:id` | `TasksModule` | Detalle completo de tarea y siguientes columnas permitidas | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tablero_kanban.md](modulo_tablero_kanban.md) |
+| `POST` | `/api/v1/tasks` | `TasksModule` | Registra nueva tarea operativa en estado BACKLOG | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | [modulo_tablero_kanban.md](modulo_tablero_kanban.md) |
 
 ---
 
@@ -83,6 +89,7 @@ Para consultar la especificacion completa de cada componente del backend, accede
 1. [Modulo de Autenticacion y Usuarios](modulo_autenticacion.md): Gestion de credenciales, login, perfil, DTOs y tokens JWT.
 2. [Modulo CRM de Clientes](modulo_crm_clientes.md): Gestion de expedientes 360, busqueda rapida, DTOs de creacion y actualizacion.
 3. [Modulo de Reservas Aereas y Maquina de Estados](modulo_reservas_aereas.md): Flujo transaccional de vuelos, PNR, invariantes y transiciones.
-4. [Modulo de Tramites Consulares y Visas DS-160](modulo_tramites_consulares.md): Fases consulares, validaciones de arancel ($185 USD) y citas.
+4. [Modulo de Tramites Consulares y Visas DS-160](modulo_tramites_consulares.md): Fases consulares, arancel ($185 USD) y agenda multianual.
 5. [Modulo de Auditoria y Seguridad](modulo_auditoria_y_seguridad.md): Interceptor inmutable (Ley 29733), guardias RBAC y filtro de errores.
 6. [Modulo de Persistencia y Prisma](modulo_persistencia_prisma.md): Modelo de datos relacional 3FN, enums, migraciones y seed.
+7. [Modulo de Tablero Operativo Kanban](modulo_tablero_kanban.md): Transiciones entre columnas, control de ciclo de vida de tareas y auditoria.
