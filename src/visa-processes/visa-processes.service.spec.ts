@@ -50,6 +50,15 @@ describe('VisaProcessesService (WBS 7.1.2.1)', () => {
       count: jest.fn(),
       update: jest.fn(),
     },
+    appointment: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
+    paymentRecord: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn((cb) => cb(mockPrismaService)),
   };
 
   const mockStateMachine = {
@@ -192,4 +201,77 @@ describe('VisaProcessesService (WBS 7.1.2.1)', () => {
       );
     });
   });
+
+  describe('scheduleAppointment (WBS 7.1.2.2)', () => {
+    it('debe lanzar NotFoundException si el tramite consular no existe', async () => {
+      mockPrismaService.visaProcess.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.scheduleAppointment('vp-404', {
+          appointmentDate: '2026-11-20T10:00:00.000Z',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('debe programar cita consular exitosamente y registrar arancel MRV', async () => {
+      mockPrismaService.visaProcess.findUnique.mockResolvedValue(mockVisaProcess);
+      const mockAppointment = {
+        id: 'apt-1',
+        title: 'Entrevista Consular - Embajada',
+        appointmentDate: new Date('2026-11-20T10:00:00.000Z'),
+        location: 'Embajada de Estados Unidos en Lima',
+        status: 'SCHEDULED',
+        visaProcessId: 'vp-1',
+      };
+      mockPrismaService.appointment.create.mockResolvedValue(mockAppointment);
+      mockPrismaService.visaProcess.update.mockResolvedValue({
+        ...mockVisaProcess,
+        consularFeePaid: true,
+        embassyDate: new Date('2026-11-20T10:00:00.000Z'),
+        appointments: [mockAppointment],
+      });
+
+      const result = await service.scheduleAppointment('vp-1', {
+        appointmentDate: '2026-11-20T10:00:00.000Z',
+        location: 'Embajada de Estados Unidos en Lima',
+        mrvPaymentCode: 'MRV99887766',
+        consularFeeAmount: 185.0,
+      });
+
+      expect(result.appointment).toBeDefined();
+      expect(result.appointment.id).toBe('apt-1');
+      expect(result.visaProcess.consularFeePaid).toBe(true);
+      expect(mockPrismaService.paymentRecord.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('findMultiannualAppointments (WBS 7.1.2.2)', () => {
+    it('debe consultar citas multianuales con rango y filtros', async () => {
+      const mockAppointments = [
+        {
+          id: 'apt-1',
+          title: 'Entrevista Embajada',
+          appointmentDate: new Date('2027-03-15T09:00:00.000Z'),
+          location: 'Embajada de Estados Unidos en Lima',
+          status: 'SCHEDULED',
+          visaProcess: {
+            ...mockVisaProcess,
+          },
+        },
+      ];
+      mockPrismaService.appointment.count.mockResolvedValue(1);
+      mockPrismaService.appointment.findMany.mockResolvedValue(mockAppointments);
+
+      const result = await service.findMultiannualAppointments({
+        year: 2027,
+        page: 1,
+        limit: 10,
+      });
+
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+      expect(result.meta.range.year).toBe(2027);
+    });
+  });
 });
+

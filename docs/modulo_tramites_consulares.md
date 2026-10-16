@@ -146,3 +146,100 @@ El avance del expediente sigue una secuencia obligatoria:
 - **400 Bad Request:** Omision de arancel pagado, codigo DS-160 ausente o invalido.
 - **404 Not Found:** Tramite consular no encontrado.
 - **409 Conflict:** Transicion no permitida en la secuencia (ej. salto a `CONCLUIDO` sin pasar por etapas previas).
+
+---
+
+### 3.5. Programar Cita Consular y Registrar Arancel MRV (WBS 7.1.2.2)
+
+- **Ruta:** `/api/v1/visa-processes/:id/appointments`
+- **Metodo HTTP:** `POST`
+- **Nivel de Acceso:** `ADMIN`, `SUPERVISOR`, `AGENT`, `ASESOR`
+- **Descripcion:** Registra una cita consular multianual en la tabla `appointments`, actualiza la fecha respectiva en `visa_processes` y registra de forma atomica el arancel consular MRV ($185 USD) en `payment_records`.
+
+#### Ejemplo de Cuerpo de Peticion
+```json
+{
+  "appointmentDate": "2027-04-18T10:00:00.000Z",
+  "location": "Embajada de Estados Unidos en Lima",
+  "title": "Entrevista Consular - Embajada",
+  "mrvPaymentCode": "MRV2027998877",
+  "consularFeeAmount": 185.00,
+  "notes": "Cita agendada para 2027 con arancel cancelado en Scotiabank"
+}
+```
+
+#### Respuesta 201 Created
+```json
+{
+  "message": "Cita consular programada exitosamente",
+  "appointment": {
+    "id": "f3b2a1c0-9d8e-7f6a-5b4c-3d2e1f0a9b8c",
+    "title": "Entrevista Consular - Embajada",
+    "appointmentDate": "2027-04-18T10:00:00.000Z",
+    "location": "Embajada de Estados Unidos en Lima",
+    "status": "SCHEDULED",
+    "visaProcessId": "e2d3c4b5-a6b7-8c9d-0e1f-2a3b4c5d6e7f"
+  },
+  "visaProcess": {
+    "id": "e2d3c4b5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+    "currentStep": "CITA_CONSOLIDADA",
+    "consularFeePaid": true,
+    "embassyDate": "2027-04-18T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 3.6. Consulta Indexada Multianual de Citas Consulares (WBS 7.1.2.2)
+
+- **Ruta:** `/api/v1/visa-processes/appointments/multiannual`
+- **Metodo HTTP:** `GET`
+- **Nivel de Acceso:** `ADMIN`, `SUPERVISOR`, `AGENT`, `ASESOR`
+- **Parametros de Consulta (Query):**
+  - `year`: Filtrar por anio especifico (ej. `2026`, `2027`).
+  - `startDate`, `endDate`: Rango de fechas ISO 8601.
+  - `customerId`: Filtrar citas por UUID del cliente.
+  - `customerSearch`: Busqueda rapida indexada por nombres, apellidos o documento del titular.
+  - `location`: Filtrar por sede (ej. `Embajada de Estados Unidos en Lima`).
+  - `page`, `limit`: Paginacion.
+
+#### Respuesta 200 OK
+```json
+{
+  "data": [
+    {
+      "id": "f3b2a1c0-9d8e-7f6a-5b4c-3d2e1f0a9b8c",
+      "title": "Entrevista Consular - Embajada",
+      "appointmentDate": "2027-04-18T10:00:00.000Z",
+      "location": "Embajada de Estados Unidos en Lima",
+      "status": "SCHEDULED",
+      "visaProcess": {
+        "id": "e2d3c4b5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+        "confirmationCode": "AA00998877",
+        "consularFeePaid": true,
+        "booking": {
+          "bookingCode": "RES-2026-001",
+          "customer": {
+            "firstName": "Juan",
+            "lastName": "Perez",
+            "documentNumber": "74859612"
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "range": {
+      "startDate": "2027-01-01T00:00:00.000Z",
+      "endDate": "2027-12-31T23:59:59.999Z",
+      "year": 2027
+    }
+  }
+}
+```
+

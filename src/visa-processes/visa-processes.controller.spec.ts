@@ -26,6 +26,15 @@ describe('VisaProcessesController (WBS 7.1.2.1)', () => {
       meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
     }),
     findById: jest.fn().mockResolvedValue(mockProcess),
+    scheduleAppointment: jest.fn().mockResolvedValue({
+      message: 'Cita consular programada exitosamente',
+      appointment: { id: 'apt-1', status: 'SCHEDULED' },
+      visaProcess: mockProcess,
+    }),
+    findMultiannualAppointments: jest.fn().mockResolvedValue({
+      data: [{ id: 'apt-1' }],
+      meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+    }),
     transitionStatus: jest.fn().mockResolvedValue({
       transition: {
         success: true,
@@ -115,4 +124,35 @@ describe('VisaProcessesController (WBS 7.1.2.1)', () => {
       );
     });
   });
+
+  describe('findMultiannualAppointments (WBS 7.1.2.2)', () => {
+    it('debe invocar service.findMultiannualAppointments con el query', async () => {
+      const query = { year: 2027, page: 1, limit: 10 };
+      const result = await controller.findMultiannualAppointments(query);
+
+      expect(service.findMultiannualAppointments).toHaveBeenCalledWith(query);
+      expect(result.data).toHaveLength(1);
+    });
+  });
+
+  describe('scheduleAppointment (WBS 7.1.2.2)', () => {
+    it('debe invocar service.scheduleAppointment con UUID, DTO y usuario', async () => {
+      const dto = {
+        appointmentDate: '2026-11-20T10:00:00.000Z',
+        location: 'Embajada de Estados Unidos en Lima',
+        mrvPaymentCode: 'MRV99887766',
+      };
+      const user = { id: 'u-1', email: 'agent@mistik.com', role: Role.AGENT };
+
+      const result = await controller.scheduleAppointment(validUuid, dto, user);
+
+      expect(service.scheduleAppointment).toHaveBeenCalledWith(
+        validUuid,
+        dto,
+        user,
+      );
+      expect(result.appointment).toBeDefined();
+    });
+  });
 });
+
