@@ -14,8 +14,15 @@ import {
 export class VisaStateMachineService {
   // Matriz secuencial de transiciones consulares
   private readonly transitions: Record<VisaProcessStep, VisaProcessStep[]> = {
-    [VisaProcessStep.REGISTRO_DS160]: [VisaProcessStep.PAGO_ARANCEL],
-    [VisaProcessStep.PAGO_ARANCEL]: [VisaProcessStep.CITA_CONSOLIDADA],
+    [VisaProcessStep.REGISTRO_DS160]: [
+      VisaProcessStep.PAGO_ARANCEL,
+      VisaProcessStep.CITA_CONSOLIDADA,
+      VisaProcessStep.CONCLUIDO,
+    ],
+    [VisaProcessStep.PAGO_ARANCEL]: [
+      VisaProcessStep.CITA_CONSOLIDADA,
+      VisaProcessStep.CONCLUIDO,
+    ],
     [VisaProcessStep.CITA_CONSOLIDADA]: [VisaProcessStep.CONCLUIDO],
     [VisaProcessStep.CONCLUIDO]: [],
   };

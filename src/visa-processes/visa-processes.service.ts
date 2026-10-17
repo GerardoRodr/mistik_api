@@ -328,6 +328,7 @@ export class VisaProcessesService {
 
       // 2. Actualizar fechas correspondientes y estado de arancel en visaProcess
       const updateData: Prisma.VisaProcessUpdateInput = {
+        currentStep: VisaProcessStep.CITA_CONSOLIDADA,
         ...(isCas
           ? { casDate: appointmentDate }
           : { embassyDate: appointmentDate }),
