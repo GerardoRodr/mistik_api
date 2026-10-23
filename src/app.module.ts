@@ -10,6 +10,10 @@ import { BookingsModule } from './bookings/bookings.module';
 import { VisaProcessesModule } from './visa-processes/visa-processes.module';
 import { WholesalersModule } from './wholesalers/wholesalers.module';
 import { TasksModule } from './tasks/tasks.module';
+import { AlertsModule } from './alerts/alerts.module';
+import { AiModule } from './ai/ai.module';
+import { PaymentsModule } from './payments/payments.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -23,6 +27,10 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     VisaProcessesModule,
     WholesalersModule,
     TasksModule,
+    AlertsModule,
+    AiModule,
+    PaymentsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

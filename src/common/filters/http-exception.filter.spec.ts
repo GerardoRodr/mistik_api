@@ -49,4 +49,42 @@ describe('HttpExceptionFilter', () => {
       }),
     );
   });
+
+  it('debe capturar errores de carga util con status 413 y formatear adecuadamente', () => {
+    const statusMock = jest.fn().mockReturnThis();
+    const jsonMock = jest.fn();
+
+    const mockResponse = {
+      status: statusMock,
+      json: jsonMock,
+    };
+
+    const mockRequest = {
+      url: '/api/v1/ai/ocr-passport',
+      method: 'POST',
+    };
+
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => mockResponse,
+        getRequest: () => mockRequest,
+      }),
+    } as unknown as ArgumentsHost;
+
+    const payloadError = Object.assign(new Error('request entity too large'), {
+      status: 413,
+      type: 'entity.too.large',
+    });
+
+    filter.catch(payloadError, host);
+
+    expect(statusMock).toHaveBeenCalledWith(413);
+    expect(jsonMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 413,
+        error: 'Payload Too Large',
+        path: '/api/v1/ai/ocr-passport',
+      }),
+    );
+  });
 });
