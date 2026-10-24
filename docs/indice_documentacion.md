@@ -16,7 +16,7 @@ El backend esta construido sobre una arquitectura modular basada en el framework
 - **Trazabilidad:** Interceptor inmutable de auditoria en base de datos bajo la Ley N. 29733
 - **Comunicacion en Tiempo Real:** WebSockets mediante Socket.io (`@nestjs/websockets`, `@nestjs/platform-socket.io`) sobre namespace `/alerts`
 - **Tareas Programadas:** Cron Jobs en segundo plano con `@nestjs/schedule`
-- **Inteligencia Artificial:** SDK oficial `@google/genai` con modelo `gemini-2.5-flash` para NLP y vision multimodal OCR
+- **Inteligencia Artificial:** SDK oficial `@google/genai` con modelo `gemini-3.8-flash` para NLP y vision multimodal OCR
 - **Documentacion Interactiva:** Swagger / OpenAPI disponible en `/api/docs`
 
 ---

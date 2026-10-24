@@ -26,11 +26,15 @@ export interface ExtractedPassportData {
   mrz?: string | null;
 }
 
-// Servicio para integracion con la API de Google Gemini 2.5 Flash (WBS 10.1.1.2)
+// Servicio para integracion con la API de Google Gemini 3.8 Flash (WBS 10.1.1.2)
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
   private genAiClient: GoogleGenAI | null = null;
+
+  private get modelName(): string {
+    return process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  }
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -72,7 +76,7 @@ export class GeminiService {
         }`;
 
         const response = await this.genAiClient.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: this.modelName,
           contents: prompt,
           config: {
             temperature: 0.1,
@@ -116,7 +120,7 @@ export class GeminiService {
         Responde exclusivamente con el JSON valido.`;
 
         const response = await this.genAiClient.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: this.modelName,
           contents: [
             {
               inlineData: {

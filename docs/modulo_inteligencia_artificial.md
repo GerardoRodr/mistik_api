@@ -1,6 +1,6 @@
 # Modulo de Inteligencia Artificial y Procesamiento de Documentos
 
-Este documento describe la arquitectura, endpoints REST, contratos JSON, integracion con Google Gemini 2.5 Flash y algoritmos de validacion preventiva del modulo `AiModule` del backend de Mistik Tours & Travel S.A.C., correspondiente a los paquetes de trabajo WBS `10.1.1.2`, `10.1.1.3`, `10.1.2.2` y `10.1.2.3` de la Semana 10.
+Este documento describe la arquitectura, endpoints REST, contratos JSON, integracion con Google Gemini 3.8 Flash y algoritmos de validacion preventiva del modulo `AiModule` del backend de Mistik Tours & Travel S.A.C., correspondiente a los paquetes de trabajo WBS `10.1.1.2`, `10.1.1.3`, `10.1.2.2` y `10.1.2.3` de la Semana 10.
 
 ---
 
@@ -15,7 +15,7 @@ El modulo de Inteligencia Artificial automatiza la extraccion y validacion de da
 - **Validador consular preventivo:** `PassportValidatorService` (`src/ai/passport-validator.service.ts`)
 - **Modulo principal:** `AiModule` (`src/ai/ai.module.ts`)
 - **Dependencias tecnologicas:** SDK oficial `@google/genai` (Google Gen AI SDK v2.31+), `dotenv`.
-- **Modelo LLM utilizado:** `gemini-2.5-flash` con temperatura determinista `0.1`.
+- **Modelo LLM utilizado:** `gemini-3.8-flash` con temperatura determinista `0.1`.
 
 ---
 

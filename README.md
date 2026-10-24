@@ -25,7 +25,7 @@ API REST y Gateway WebSockets del Sistema Web SPA para la Gestion de Citas, Tare
 - **Validacion de Entrada**: `class-validator` y `class-transformer` con `ValidationPipe` global
 - **Comunicacion en Tiempo Real**: Socket.io (`@nestjs/websockets`, `@nestjs/platform-socket.io`) sobre namespace `/alerts`
 - **Automatizacion y Cron Jobs**: `@nestjs/schedule`
-- **Inteligencia Artificial y Vision**: SDK oficial `@google/genai` con modelo `gemini-2.5-flash`
+- **Inteligencia Artificial y Vision**: SDK oficial `@google/genai` con modelo `gemini-3.8-flash`
 - **Documentacion Interactiva**: Swagger / OpenAPI (`@nestjs/swagger`) en `/api/docs`
 - **Pruebas Automatizadas**: Jest (34 suites, 195 pruebas unitarias e integracion)
 - **Linter y Calidad de Codigo**: Oxlint (analisis estatico de tipos y sintaxis)
@@ -94,7 +94,7 @@ JWT_SECRET="mistik_jwt_secret_key_2026_capstone_secure"
 JWT_EXPIRATION="1h"
 CORS_ORIGIN="http://localhost:4200,http://127.0.0.1:4200"
 
-# Inteligencia Artificial (Google Gemini 2.5 Flash)
+# Inteligencia Artificial (Google Gemini 3.8 Flash)
 GEMINI_API_KEY="tu_api_key_de_gemini_aqui"
 ```
 
@@ -238,7 +238,7 @@ src/
 ├── app.module.ts            # Modulo principal del backend
 ├── app.service.ts           # Servicio base de la aplicacion
 ├── main.ts                  # Punto de entrada, ValidationPipe, dotenv y Swagger
-├── ai/                      # Modulo de Inteligencia Artificial (Gemini 2.5 Flash)
+├── ai/                      # Modulo de Inteligencia Artificial (Gemini 3.8 Flash)
 │   ├── ai.controller.ts     # Endpoints /api/v1/ai/parse-itinerary y /ocr-passport
 │   ├── ai.module.ts
 │   ├── dto/                 # DTOs de itinerario e imagen base64
