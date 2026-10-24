@@ -1,6 +1,6 @@
 # MISTIK TOURS - Backend API (CAPSTONE-TUR-2026)
 
-API REST del Sistema Web SPA para la Gestion de Citas, Tareas Operativas y Expedientes Turisticos, desarrollado para la empresa MISTIK TOURS & TRAVEL S.A.C. en el marco del curso Capstone Project de la Universidad Privada del Norte (UPN).
+API REST y Gateway WebSockets del Sistema Web SPA para la Gestion de Citas, Tareas Operativas y Expedientes Turisticos, desarrollado para la empresa MISTIK TOURS & TRAVEL S.A.C. en el marco del curso Capstone Project de la Universidad Privada del Norte (UPN).
 
 ---
 
@@ -12,6 +12,7 @@ API REST del Sistema Web SPA para la Gestion de Citas, Tareas Operativas y Exped
 - **Sponsor Tecnologico**: Supervisor de Operaciones y Tramites Consulares
 - **Asesor Academico**: Docente del curso Capstone Project (INVE1535) - UPN
 - **Semestre Academico**: Ciclo 2026-2 (16 semanas)
+- **Estado de Desarrollo**: Semana 10 (100% Funcionalidad del Software)
 
 ---
 
@@ -22,8 +23,11 @@ API REST del Sistema Web SPA para la Gestion de Citas, Tareas Operativas y Exped
 - **Capa de Persistencia**: Prisma ORM v6 sobre PostgreSQL (Supabase)
 - **Seguridad y Criptografia**: Passport JWT (`@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`) y Bcrypt
 - **Validacion de Entrada**: `class-validator` y `class-transformer` con `ValidationPipe` global
+- **Comunicacion en Tiempo Real**: Socket.io (`@nestjs/websockets`, `@nestjs/platform-socket.io`) sobre namespace `/alerts`
+- **Automatizacion y Cron Jobs**: `@nestjs/schedule`
+- **Inteligencia Artificial y Vision**: SDK oficial `@google/genai` con modelo `gemini-2.5-flash`
 - **Documentacion Interactiva**: Swagger / OpenAPI (`@nestjs/swagger`) en `/api/docs`
-- **Pruebas Automatizadas**: Jest (pruebas unitarias y funcionales)
+- **Pruebas Automatizadas**: Jest (34 suites, 195 pruebas unitarias e integracion)
 - **Linter y Calidad de Codigo**: Oxlint (analisis estatico de tipos y sintaxis)
 
 ---
@@ -50,6 +54,7 @@ El esquema de base de datos esta completamente tipado y normalizado en [prisma/s
 7. **VisaProcess** (`visa_processes`): Control de solicitudes de visa DS-160 y registro de arancel consular.
 8. **PaymentRecord** (`payment_records`): Control de cobros y pagos con hipervinculos a Google Drive (costo cero).
 9. **AuditLog** (`audit_logs`): Registro inmutable de trazabilidad y auditoria de eventos en el sistema.
+10. **Wholesaler** (`wholesalers`): Consolidadoras mayoristas y aerolineas emisoras.
 
 ---
 
@@ -87,6 +92,10 @@ DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432
 DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?sslmode=require"
 JWT_SECRET="mistik_jwt_secret_key_2026_capstone_secure"
 JWT_EXPIRATION="1h"
+CORS_ORIGIN="http://localhost:4200,http://127.0.0.1:4200"
+
+# Inteligencia Artificial (Google Gemini 2.5 Flash)
+GEMINI_API_KEY="tu_api_key_de_gemini_aqui"
 ```
 
 ---
@@ -138,7 +147,7 @@ JWT_EXPIRATION="1h"
   npm run start:prod
   ```
 
-- **Ejecutar suite de pruebas con Jest**:
+- **Ejecutar suite completa de pruebas con Jest**:
   ```bash
   npm test
   ```
@@ -157,8 +166,14 @@ Ademas de Swagger, el proyecto cuenta con **documentacion tecnica modular para d
 - **Indice General y Onboarding**: [docs/indice_documentacion.md](docs/indice_documentacion.md)
 - **Modulo de Autenticacion**: [docs/modulo_autenticacion.md](docs/modulo_autenticacion.md)
 - **Modulo CRM de Clientes**: [docs/modulo_crm_clientes.md](docs/modulo_crm_clientes.md)
+- **Modulo de Reservas Aereas**: [docs/modulo_reservas_aereas.md](docs/modulo_reservas_aereas.md)
+- **Modulo de Tramites Consulares**: [docs/modulo_tramites_consulares.md](docs/modulo_tramites_consulares.md)
 - **Modulo de Auditoria y Seguridad**: [docs/modulo_auditoria_y_seguridad.md](docs/modulo_auditoria_y_seguridad.md)
 - **Modulo de Persistencia (Prisma)**: [docs/modulo_persistencia_prisma.md](docs/modulo_persistencia_prisma.md)
+- **Modulo de Tablero Kanban**: [docs/modulo_tablero_kanban.md](docs/modulo_tablero_kanban.md)
+- **Modulo de Alertas y WebSockets**: [docs/modulo_alertas_y_websockets.md](docs/modulo_alertas_y_websockets.md)
+- **Modulo de Inteligencia Artificial**: [docs/modulo_inteligencia_artificial.md](docs/modulo_inteligencia_artificial.md)
+- **Modulo de Pagos y Business Intelligence**: [docs/modulo_pagos_y_analitica.md](docs/modulo_pagos_y_analitica.md)
 
 ### Documentacion Interactiva OpenAPI (Swagger)
 
@@ -174,16 +189,43 @@ Para probar endpoints protegidos desde la interfaz de Swagger:
 3. Presionar el boton **Authorize** en la esquina superior de Swagger UI.
 4. Pegar el token en el campo `JWT-auth` y confirmar.
 
-### Catalogo de Endpoints Disponibles
+### Catalogo de Endpoints y Servicios Disponibles
 
 | Metodo | Ruta | Descripcion | Autenticacion | Modulo |
 | :--- | :--- | :--- | :---: | :--- |
 | `POST` | `/auth/login` | Iniciar sesion con correo y clave, emite token JWT | Publico | AuthModule |
 | `GET` | `/auth/profile` | Consultar perfil del usuario autenticado en sesion | Bearer JWT | AuthModule |
-| `GET` | `/api/v1/customers` | Busqueda paginada y filtrado de expedientes (< 5s) | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
-| `GET` | `/api/v1/customers/:id` | Detalle del expediente 360 del cliente y su historial | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
-| `POST` | `/api/v1/customers` | Registro de cliente con validacion DTO estricta | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
-| `PATCH` | `/api/v1/customers/:id` | Actualizacion parcial de datos del expediente | Bearer JWT (ADMIN, SUPERVISOR, AGENT) | CustomersModule |
+| `GET` | `/api/v1/customers` | Busqueda paginada y filtrado de expedientes (< 5s) | Bearer JWT | CustomersModule |
+| `GET` | `/api/v1/customers/:id` | Detalle del expediente 360 del cliente y su historial | Bearer JWT | CustomersModule |
+| `POST` | `/api/v1/customers` | Registro de cliente con validacion DTO estricta | Bearer JWT | CustomersModule |
+| `PATCH` | `/api/v1/customers/:id` | Actualizacion parcial de datos del expediente | Bearer JWT | CustomersModule |
+| `GET` | `/api/v1/bookings` | Consulta y filtro de reservas y vuelos con indices | Bearer JWT | BookingsModule |
+| `GET` | `/api/v1/bookings/:id` | Detalle consolidado de expediente de reserva | Bearer JWT | BookingsModule |
+| `POST` | `/api/v1/bookings` | Registra nueva reserva con pasajeros asociados | Bearer JWT | BookingsModule |
+| `GET` | `/api/v1/bookings/:id/transitions` | Consulta transiciones validas en maquina de estados | Bearer JWT | BookingsModule |
+| `POST` | `/api/v1/bookings/:id/transition` | Ejecuta cambio de estado validado en maquina de estados | Bearer JWT | BookingsModule |
+| `GET` | `/api/v1/bookings/:idOrPnr/passengers` | Consulta pasajeros por ID de reserva o PNR | Bearer JWT | BookingsModule |
+| `POST` | `/api/v1/bookings/:id/payments` | Registra comprobante de pago con URL a Google Drive | Bearer JWT | PaymentsModule |
+| `GET` | `/api/v1/bookings/:id/balance` | Retorna calculo reactivo de saldos deudores | Bearer JWT | PaymentsModule |
+| `POST` | `/api/v1/visa-processes` | Registra nuevo expediente consular DS-160 | Bearer JWT | VisaProcessesModule |
+| `GET` | `/api/v1/visa-processes` | Listado paginado de tramites consulares con filtros | Bearer JWT | VisaProcessesModule |
+| `GET` | `/api/v1/visa-processes/:id` | Consulta expediente consular con citas y linea de tiempo | Bearer JWT | VisaProcessesModule |
+| `PATCH` | `/api/v1/visa-processes/:id/status` | Avanza fase consular en la maquina de estados | Bearer JWT | VisaProcessesModule |
+| `POST` | `/api/v1/visa-processes/:id/appointments` | Registra cita consular y arancel MRV ($185 USD) | Bearer JWT | VisaProcessesModule |
+| `GET` | `/api/v1/visa-processes/appointments/multiannual` | Consulta indexada de citas futuras 2026-2027 | Bearer JWT | VisaProcessesModule |
+| `GET` | `/api/v1/wholesalers` | Catalogo de consolidadoras mayoristas y aerolineas | Bearer JWT | WholesalersModule |
+| `GET` | `/api/v1/wholesalers/:id` | Detalle individual de consolidadora por ID unico | Bearer JWT | WholesalersModule |
+| `PATCH` | `/api/v1/tasks/:id/assign` | Asigna colaborador responsable unico a la tarea | Bearer JWT | TasksModule |
+| `PATCH` | `/api/v1/tasks/:id/status` | Transiciona estado de tarjeta Kanban con movedAt y WS | Bearer JWT | TasksModule |
+| `GET` | `/api/v1/tasks` | Listado de tareas con filtros y agrupacion Kanban | Bearer JWT | TasksModule |
+| `GET` | `/api/v1/tasks/:id` | Detalle completo de tarea y siguientes columnas | Bearer JWT | TasksModule |
+| `POST` | `/api/v1/tasks` | Registra nueva tarea operativa en estado BACKLOG | Bearer JWT | TasksModule |
+| `POST` | `/api/v1/ai/parse-itinerary` | Extraccion NLP estructurada de correos con Gemini | Bearer JWT | AiModule |
+| `POST` | `/api/v1/ai/ocr-passport` | Lectura OCR y alerta preventiva de vigencia < 6 meses | Bearer JWT | AiModule |
+| `GET` | `/api/v1/analytics/financial-summary` | Resumen financiero de ingresos devengados vs cobrados | Bearer JWT | AnalyticsModule |
+| `GET` | `/api/v1/analytics/visa-conversion` | Embudo de conversion de expedientes consulares | Bearer JWT | AnalyticsModule |
+| `GET` | `/api/v1/analytics/kanban-bottlenecks` | Diagnostico de limites WIP y cuellos de botella | Bearer JWT | AnalyticsModule |
+| `WS` | `/alerts` | Gateway WebSockets Socket.io (`checkin`, `visa`, `task`) | Publico / Bearer | AlertsModule |
 
 ---
 
@@ -195,52 +237,74 @@ src/
 ├── app.controller.ts        # Controlador base de comprobacion de salud
 ├── app.module.ts            # Modulo principal del backend
 ├── app.service.ts           # Servicio base de la aplicacion
-├── main.ts                  # Punto de entrada, ValidationPipe y Swagger
+├── main.ts                  # Punto de entrada, ValidationPipe, dotenv y Swagger
+├── ai/                      # Modulo de Inteligencia Artificial (Gemini 2.5 Flash)
+│   ├── ai.controller.ts     # Endpoints /api/v1/ai/parse-itinerary y /ocr-passport
+│   ├── ai.module.ts
+│   ├── dto/                 # DTOs de itinerario e imagen base64
+│   ├── gemini.service.spec.ts
+│   ├── gemini.service.ts    # Integracion @google/genai con modo fallback
+│   ├── passport-ocr.service.ts # Orquestador OCR de pasaportes
+│   ├── passport-validator.service.spec.ts
+│   └── passport-validator.service.ts # Algoritmo de vigencia < 6 meses
+├── alerts/                  # Modulo de Alertas Operativas y WebSockets
+│   ├── alerts.cron.ts       # Cron Jobs @Cron (check-ins 24-48h y citas consulares)
+│   ├── alerts.gateway.spec.ts
+│   ├── alerts.gateway.ts    # Gateway Socket.io en namespace /alerts
+│   ├── alerts.module.ts     # Modulo exportador de ScheduleModule y Gateway
+│   ├── alerts.service.spec.ts
+│   └── alerts.service.ts    # Logica de deteccion y emision de eventos
+├── analytics/               # Modulo de Business Intelligence y Analitica
+│   ├── analytics.controller.ts # Endpoints /api/v1/analytics/*
+│   ├── analytics.module.ts
+│   ├── analytics.service.spec.ts
+│   └── analytics.service.ts # Resumen financiero, embudo visa y limites WIP
 ├── auth/                    # Modulo de seguridad y autenticacion
-│   ├── auth.controller.spec.ts
 │   ├── auth.controller.ts   # Endpoints /auth/login y /auth/profile
-│   ├── auth.module.ts       # Registro de JwtModule y PassportModule
-│   ├── auth.service.spec.ts
-│   ├── auth.service.ts      # Validacion bcrypt y emision de tokens
-│   ├── auth-verification.spec.ts # Pruebas funcionales de seguridad
-│   ├── decorators/
-│   │   ├── current-user.decorator.ts # Inyeccion de req.user
-│   │   └── roles.decorator.ts        # Decorador @Roles para RBAC
-│   ├── dto/
-│   │   └── login.dto.ts     # DTO validado con class-validator
-│   ├── guards/
-│   │   ├── jwt-auth.guard.spec.ts
-│   │   ├── jwt-auth.guard.ts # Guard protector basado en JWT
-│   │   ├── roles.guard.spec.ts
-│   │   └── roles.guard.ts    # Guard RBAC para control por roles
-│   └── strategies/
-│       ├── jwt.strategy.spec.ts
-│       └── jwt.strategy.ts  # Estrategia de extraccion Bearer de Passport
+│   ├── auth.module.ts
+│   ├── auth.service.ts      # Validacion bcrypt y emision de tokens JWT
+│   ├── guards/              # JwtAuthGuard y RolesGuard
+│   └── strategies/          # Estrategia JwtStrategy
+├── bookings/                # Modulo transaccional de reservas y vuelos
+│   ├── bookings.controller.ts
+│   ├── bookings.module.ts
+│   ├── bookings.service.ts  # Maquina de estados de reservas y PNR
+│   └── state-machine/       # Invariantes y transiciones de vuelo
 ├── common/                  # Componentes transversales
-│   ├── filters/
-│   │   ├── http-exception.filter.spec.ts
-│   │   └── http-exception.filter.ts # Filtro global de respuestas de error
-│   └── interceptors/
-│       ├── audit-log.interceptor.spec.ts
-│       └── audit-log.interceptor.ts # Interceptor inmutable (Ley 29733)
+│   ├── filters/             # HttpExceptionFilter global
+│   └── interceptors/        # AuditLogInterceptor (Ley 29733)
 ├── customers/               # Modulo CRM de expedientes de clientes
-│   ├── customers.controller.spec.ts
-│   ├── customers.controller.ts   # Endpoints CRUD /api/v1/customers
-│   ├── customers.integration.spec.ts # Pruebas integrales con Supertest
+│   ├── customers.controller.ts
 │   ├── customers.module.ts
-│   ├── customers.service.spec.ts
-│   ├── customers.service.ts      # Logica transaccional y busqueda < 5s
-│   └── dto/
-│       ├── create-customer.dto.ts
-│       ├── query-customer.dto.ts
-│       └── update-customer.dto.ts
-├── prisma/                  # Capa de persistencia global
-│   ├── prisma.module.ts     # Modulo global exportador de PrismaService
-│   └── prisma.service.ts    # Cliente Prisma con hooks de conexion
-└── users/                   # Modulo de gestion de colaboradores
-    ├── users.module.ts      # Modulo de usuarios
-    ├── users.service.spec.ts
-    └── users.service.ts     # Metodos findByEmail, findById y create
+│   └── customers.service.ts # Logica de busqueda rapida indexada (< 5s)
+├── payments/                # Modulo de gestion de pagos y comprobantes
+│   ├── dto/                 # CreatePaymentDto con regex Google Drive
+│   ├── payments.controller.ts # Endpoints /api/v1/bookings/:id/payments y /balance
+│   ├── payments.module.ts
+│   ├── payments.service.spec.ts
+│   └── payments.service.ts  # Calculador reactivo de saldo (PAID/PARTIAL/UNPAID)
+├── prisma/                  # Capa de persistencia relacional
+│   ├── prisma.module.ts
+│   └── prisma.service.ts    # Conexion a Supabase PostgreSQL
+├── tasks/                   # Modulo de control de tareas y tablero Kanban
+│   ├── dto/                 # AssignTaskDto, CreateTaskDto, TransitionDto
+│   ├── task-state.service.ts # Normalizador de estados y columnas Kanban
+│   ├── tasks.controller.ts  # Endpoints /api/v1/tasks (incluye :id/assign)
+│   ├── tasks.module.ts
+│   ├── tasks.service.spec.ts
+│   └── tasks.service.ts     # Asignacion exclusiva y emision WebSockets
+├── users/                   # Modulo de administracion de usuarios
+│   ├── users.module.ts
+│   └── users.service.ts
+├── visa-processes/          # Modulo de tramites consulares DS-160
+│   ├── visa-processes.controller.ts
+│   ├── visa-processes.module.ts
+│   ├── visa-processes.service.ts # Fases, arancel MRV y citas multianuales
+│   └── state-machine/       # Maquina de estados consulares
+└── wholesalers/             # Catalogo de consolidadoras y aerolineas
+    ├── wholesalers.controller.ts
+    ├── wholesalers.module.ts
+    └── wholesalers.service.ts
 ```
 
 ---
