@@ -27,14 +27,45 @@ import { TasksService } from './tasks.service';
 import { TransitionTaskStatusDto } from './dto/transition-task-status.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { QueryTaskDto } from './dto/query-task.dto';
+import { AssignTaskDto } from './dto/assign-task.dto';
 
-// Controlador REST para la gestion de tareas y transicion de estados del tablero Kanban (WBS 8.1.2.1)
+// Controlador REST para la gestion de tareas y transicion de estados del tablero Kanban (WBS 8.1.2)
 @ApiTags('Kanban Tasks')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('api/v1/tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
+
+  // Asignar colaborador responsable unico a una tarea operativa (WBS 8.1.2.2)
+  @Patch(':id/assign')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.ADMIN, Role.SUPERVISOR, Role.AGENT, 'ASESOR')
+  @ApiOperation({
+    summary: 'Asignar colaborador responsable unico a la tarea operativa',
+    description:
+      'Garantiza asignacion exclusiva vinculando un unico usuario colaborador activo a la tarea',
+  })
+  @ApiParam({ name: 'id', description: 'UUID de la tarea operativa ServiceTask' })
+  @ApiResponse({
+    status: 200,
+    description: 'Colaborador asignado exitosamente',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Colaborador inactivo o identificador no valido',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarea o colaborador no encontrado',
+  })
+  async assignTask(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AssignTaskDto,
+    @CurrentUser() user: { id: string; email: string; role: string },
+  ) {
+    return this.tasksService.assignTask(id, dto, user);
+  }
 
   // Transicionar estado/columna de una tarea en el tablero Kanban (WBS 8.1.2.1)
   @Patch(':id/status')
@@ -52,7 +83,7 @@ export class TasksController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Estado invalido o tarea ya en el estado solicitado',
+    description: 'Estado invalido o tarea ya en el estado solicitado o sin responsable al pasar a IN_PROGRESS',
   })
   @ApiResponse({
     status: 404,

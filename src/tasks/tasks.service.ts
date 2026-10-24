@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,16 +9,84 @@ import { KanbanColumn, TaskStateService } from './task-state.service';
 import { TransitionTaskStatusDto } from './dto/transition-task-status.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { QueryTaskDto } from './dto/query-task.dto';
+import { AssignTaskDto } from './dto/assign-task.dto';
+import { AlertsGateway } from '../alerts/alerts.gateway';
 
-// Servicio de negocio para la gestion y transicion de tareas operativas (WBS 8.1.2.1)
+// Servicio de negocio para la gestion y transicion de tareas operativas (WBS 8.1.2.1, 8.1.2.2)
 @Injectable()
 export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stateService: TaskStateService,
+    private readonly alertsGateway: AlertsGateway,
   ) {}
 
-  // Transicion de columna/estado con registro de fechas (WBS 8.1.2.1)
+  // Asignacion exclusiva de colaborador responsable (WBS 8.1.2.2)
+  async assignTask(
+    id: string,
+    dto: AssignTaskDto,
+    _user?: { id?: string; email?: string; role?: string },
+  ) {
+    const task = await this.prisma.serviceTask.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Tarea operativa no encontrada');
+    }
+
+    const assignee = await this.prisma.user.findUnique({
+      where: { id: dto.assignedToId },
+    });
+
+    if (!assignee) {
+      throw new NotFoundException('Colaborador asignado no encontrado');
+    }
+
+    if (!assignee.isActive) {
+      throw new BadRequestException(
+        'No se puede asignar una tarea a un colaborador inactivo',
+      );
+    }
+
+    const updated = await this.prisma.serviceTask.update({
+      where: { id },
+      data: { assignedToId: dto.assignedToId },
+      include: {
+        assignedTo: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            bookingCode: true,
+            status: true,
+            customer: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        appointments: true,
+      },
+    });
+
+    return {
+      ...updated,
+      kanbanColumn: this.stateService.toKanbanColumn(updated.status),
+      allowedNextColumns: this.stateService.getAllowedNextColumns(updated.status),
+    };
+  }
+
+  // Transicion de columna/estado con registro de fechas y emision en tiempo real (WBS 8.1.2.1)
   async transitionStatus(
     id: string,
     dto: TransitionTaskStatusDto,
@@ -58,6 +127,13 @@ export class TasksService {
 
     const previousStatus = task.status;
     const targetStatus = this.stateService.normalizeStatus(dto.targetStatus);
+
+    // Validar regla de asignacion exclusiva: no se permite mover a IN_PROGRESS sin responsable asignado
+    if (targetStatus === TaskStatus.IN_PROGRESS && !task.assignedToId) {
+      throw new BadRequestException(
+        'No se puede mover una tarea a En Progreso sin un colaborador responsable asignado',
+      );
+    }
 
     // Validar invariantes de transicion
     this.stateService.validateTransition(previousStatus, targetStatus);
@@ -105,6 +181,19 @@ export class TasksService {
 
     const previousColumn = this.stateService.toKanbanColumn(previousStatus);
     const targetColumn = this.stateService.toKanbanColumn(targetStatus);
+
+    // Emitir notificacion en tiempo real via WebSockets
+    this.alertsGateway.emitTaskMoved({
+      taskId: updated.id,
+      taskTitle: updated.title,
+      previousColumn,
+      targetColumn,
+      previousStatus,
+      targetStatus,
+      movedAt: timestamps.movedAt,
+      assignedTo: updated.assignedTo,
+      bookingCode: updated.booking?.bookingCode || null,
+    });
 
     return {
       transition: {

@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TaskStatus } from '@prisma/client';
 import { TasksService } from './tasks.service';
 import { TaskStateService } from './task-state.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { AlertsGateway } from '../alerts/alerts.gateway';
 
-describe('TasksService (WBS 8.1.2.1)', () => {
+describe('TasksService (WBS 8.1.2.1, 8.1.2.2)', () => {
   let service: TasksService;
   let stateService: TaskStateService;
 
@@ -58,12 +59,19 @@ describe('TasksService (WBS 8.1.2.1)', () => {
     },
   };
 
+  const mockAlertsGateway = {
+    emitTaskMoved: jest.fn(),
+    emitCheckinAlert: jest.fn(),
+    emitVisaAlert: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
         TaskStateService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: AlertsGateway, useValue: mockAlertsGateway },
       ],
     }).compile();
 
@@ -83,7 +91,22 @@ describe('TasksService (WBS 8.1.2.1)', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('debe transicionar exitosamente de BACKLOG a IN_PROGRESS con registro de fechas', async () => {
+    it('debe impedir mover la tarea a IN_PROGRESS si no tiene colaborador asignado', async () => {
+      const taskWithoutAssignee = {
+        ...mockTask,
+        assignedToId: null,
+        assignedTo: null,
+      };
+      mockPrismaService.serviceTask.findUnique.mockResolvedValue(taskWithoutAssignee);
+
+      await expect(
+        service.transitionStatus(validTaskId, {
+          targetStatus: 'IN_PROGRESS',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('debe transicionar exitosamente de BACKLOG a IN_PROGRESS con registro de fechas y emision WS', async () => {
       mockPrismaService.serviceTask.findUnique.mockResolvedValue(mockTask);
       const updatedTask = {
         ...mockTask,
@@ -102,6 +125,7 @@ describe('TasksService (WBS 8.1.2.1)', () => {
       expect(result.transition.targetColumn).toBe('IN_PROGRESS');
       expect(result.transition.movedAt).toBeInstanceOf(Date);
       expect(result.task.status).toBe(TaskStatus.IN_PROGRESS);
+      expect(mockAlertsGateway.emitTaskMoved).toHaveBeenCalled();
     });
 
     it('debe registrar completedAt al mover la tarjeta a DONE', async () => {
@@ -131,6 +155,73 @@ describe('TasksService (WBS 8.1.2.1)', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('assignTask (WBS 8.1.2.2)', () => {
+    const assigneeId = '123e4567-e89b-12d3-a456-426614174099';
+
+    it('debe asignar exitosamente un colaborador activo a la tarea', async () => {
+      mockPrismaService.serviceTask.findUnique.mockResolvedValue(mockTask);
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: assigneeId,
+        name: 'Ana Asesora',
+        email: 'ana@mistik.com',
+        isActive: true,
+        role: 'AGENT',
+      });
+      mockPrismaService.serviceTask.update.mockResolvedValue({
+        ...mockTask,
+        assignedToId: assigneeId,
+        assignedTo: {
+          id: assigneeId,
+          name: 'Ana Asesora',
+          email: 'ana@mistik.com',
+          role: 'AGENT',
+        },
+      });
+
+      const result = await service.assignTask(validTaskId, {
+        assignedToId: assigneeId,
+      });
+
+      expect(result.assignedToId).toBe(assigneeId);
+      expect(result.assignedTo.name).toBe('Ana Asesora');
+      expect(mockPrismaService.serviceTask.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: validTaskId },
+          data: { assignedToId: assigneeId },
+        }),
+      );
+    });
+
+    it('debe lanzar NotFoundException si la tarea no existe', async () => {
+      mockPrismaService.serviceTask.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.assignTask('invalid-task-id', { assignedToId: assigneeId }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('debe lanzar NotFoundException si el colaborador no existe', async () => {
+      mockPrismaService.serviceTask.findUnique.mockResolvedValue(mockTask);
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.assignTask(validTaskId, { assignedToId: 'non-existing-user' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('debe lanzar BadRequestException si el colaborador esta inactivo', async () => {
+      mockPrismaService.serviceTask.findUnique.mockResolvedValue(mockTask);
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: assigneeId,
+        isActive: false,
+      });
+
+      await expect(
+        service.assignTask(validTaskId, { assignedToId: assigneeId }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

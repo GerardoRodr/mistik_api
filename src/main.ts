@@ -1,10 +1,17 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Desactivar parser predeterminado de 100kb para permitir imagenes de pasaporte en base64
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // Configurar limite de carga a 50MB para procesamiento OCR y multimedia
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   // Configuracion de validacion global de entrada
   app.useGlobalPipes(
@@ -70,4 +77,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
-
