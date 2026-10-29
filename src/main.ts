@@ -26,14 +26,14 @@ async function bootstrap() {
   const corsOriginEnv = process.env.CORS_ORIGIN;
   const allowedOrigins: string[] = corsOriginEnv
     ? corsOriginEnv.split(',').map((origin) => origin.trim())
-    : ['http://localhost:4200', 'http://127.0.0.1:4200'];
+    : ['*'];
 
   app.enableCors({
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      // Permitir peticiones sin cabecera origin o que coincidan con la lista
+      // Permitir peticiones sin cabecera origin o que coincidan con la lista comodin
       if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -74,6 +74,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  // Enlazar a 0.0.0.0 para compatibilidad con contenedores y Render
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port, '0.0.0.0');
 }
 void bootstrap();
